@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin xmlns="http://www.phonegap.com/ns/plugins/1.0"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    id="cordova-custom-config"
+    version="1.0.0">
+
+    <name>cordova-custom-config</name>
+    <description>Cordova/Phonegap plugin to update platform configuration files based on preferences and config-file data defined in config.xml</description>
+
+    <hook src="hooks/afterPrepareHook.js" type="after_prepare" />
+    <hook src="hooks/afterPluginAddHook.js" type="after_plugin_add"  />
+</plugin>

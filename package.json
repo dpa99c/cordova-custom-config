@@ -1,0 +1,40 @@
+{
+    "version": "1.0.0",
+    "name": "cordova-custom-config",
+    "cordova_name": "cordova-custom-config",
+    "description": "Cordova/Phonegap plugin to update platform configuration files based on preferences and config-file data defined in config.xml.",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/dpa99c/cordova-custom-config.git"
+    },
+    "cordova": {
+        "id": "cordova-custom-config"
+    },
+    "issue": "https://github.com/dpa99c/cordova-custom-config/issues",
+    "keywords": [
+        "ecosystem:cordova",
+        "cordova",
+        "cordova-android",
+        "cordova-ios",
+        "phonegap",
+        "config",
+        "configuration",
+        "plist",
+        "manifest"
+    ],
+    "platforms": [
+        "android",
+        "ios"
+    ],
+    "engines": [
+        {
+            "name": "cordova",
+            "version": ">=3.0.0"
+        }
+    ],
+    "dependencies": {
+        "lodash": "*",
+        "elementtree": "*",
+        "plist": "*"
+    }
+}
