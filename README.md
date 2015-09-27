@@ -2,22 +2,31 @@ cordova-custom-config plugin
 ============================
 
 * [Overview](#overview)
+    * [Why should I use it?](#why-should-i-use-it)
 * [Installation](#installation)
 * [Notes](#notes)
     * [Preferences](#preferences)
     * [Config Files](#config-files)
 * [Example usage](#example-usage)
     * [Android](#android)
-        * [AndroidManifest.xml](#androidmanifest.xml)
+        * [AndroidManifest.xml](#androidmanifestxml)
     * [iOS](#ios)
-        * [-Info.plist](-info.plist)
+        * [-Info.plist](-infoplist)
 * [Example project](#example-project)
 * [TODO](#todo)
 * [Credits](#credits)
 
 # Overview
 
-This Cordova/Phonegap plugin for iOS and Android provides hook scripts to update platform configuration files based on preferences and config-file data defined in config.xml.
+This Cordova/Phonegap plugin for iOS and Android provides hook scripts to update platform configuration files based on custom preferences and config-file data defined in config.xml that are not supported out-of-the-box by Cordova/Phonegap.
+
+## Why should I use it?
+
+While some platform preferences can be set via Cordova/Phonegap in the config.xml, many (especially ones related to newer platform releases) cannot.
+One solution is to manually edit the configuration files in the `platforms/` directory, however this is not maintainable across multiple development machines and subsequent build operations may overwrite your changes.
+
+This plugin attempts to address this gap by allowing additional platform-specific preferences to be set after the `prepare` operation has completed, allowing either preferences set by Cordova to be overridden or other unspecified preferences to be set.
+Since the custom preferences are entered into the config.xml, they can be committed to version control and therefore applied across multiple development machines, and maintained between builds or even if a platform is removed and re-added.
 
 The plugin is registered on [npm](https://www.npmjs.com/package/cordova-custom-config) (requires Cordova CLI 5.0.0+) as `cordova-custom-config`
 
