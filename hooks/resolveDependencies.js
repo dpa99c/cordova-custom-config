@@ -2,7 +2,6 @@
 Hook is executed when plugin is added to the project.
 It will check all necessary module dependencies and install the missing ones locally.
 */
-
 var exec = require('child_process').exec,
     path = require('path'),
     cwd = path.resolve(),

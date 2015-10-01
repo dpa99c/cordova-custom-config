@@ -33,6 +33,9 @@ allowing either preferences set by Cordova to be overridden or other unspecified
 Since the custom preferences are entered into the config.xml, they can be committed to version control and therefore applied across multiple development machines,
 and maintained between builds or even if a platform is removed and re-added.
 
+As of version 1.1.0, changes made by the plugin are reversible, so removing a custom element from the config.xml will remove it from the platform configuration file on the next `prepare` operation,
+and uninstalling the plugin will restore the original configuration files<sup>[*](#note_originals)</sup>.
+
 The plugin is registered on [npm](https://www.npmjs.com/package/cordova-custom-config) (requires Cordova CLI 5.0.0+) as `cordova-custom-config`
 
 # Installation
@@ -65,11 +68,12 @@ As such, all you need to do to "use" this plugin is include the relevant keys in
 
 NOTE: There are no run-time source files included in this plugin - it is simply a convenient package of hook scripts.
 
-NOTE: Currently, items aren't removed from the platform config files if you remove them from config.xml.
-For example, if you add a custom permission, build the remove it, it will still be in the manifest.
-If you make a mistake, for example adding an element to the wrong parent, you may need to remove and add your platform,
-or revert to your previous manifest/plist file.
-However, reversible changes is on the [TODO list](https://github.com/dpa99c/cordova-custom-config/wiki/TODO).
+Changes made by the plugin are reversible, so removing a custom element from the config.xml will remove it from the platform configuration file on the next `prepare` operation and uninstalling the plugin will restore the original configuration files<sup>[*](#note_originals)</sup>.
+
+<a id="note_originals">NOTE</a>: "original configuration files" means those that were present before the first `prepare` operation was run with the plugin installed.
+The plugin restores these backups before each `prepare` operation, allowing Cordova to make modifications and then the plugin to make further modifications after the `prepare`.
+Consequently, any manual changes made to the platform configuration files after installing the plugin will be overwritten.
+However, the point of this plugin is NOT to need to make manual changes to the platform configuration files!
 
 ## Preferences
 

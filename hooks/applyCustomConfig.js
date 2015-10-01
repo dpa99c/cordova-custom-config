@@ -1,15 +1,17 @@
 #!/usr/bin/env node
 
 // global vars
-var fs = require('fs'),
+var fs = require('fs-extra'),
     path = require('path'),
+    cwd = path.resolve(),
     _ = require('lodash'),
     et = require('elementtree'),
     plist = require('plist'),
     xcode = require('xcode'),
-    tostr = require('tostr');
+    tostr = require('tostr'),
+    fileUtils;
 
-var rootdir, context;
+var rootdir, context, configXml, projectName, updatedFiles = {};
 
 var platformConfig = (function(){
 
@@ -32,27 +34,12 @@ var platformConfig = (function(){
         },
         'ios': {}
     };
-    var configXmlData, preferencesData;
+    var preferencesData;
 
-    var debug = function(msg){
-        if(context.opts.verbose){
-            console.log("afterPrepareHook: "+msg);
-        }
-    };
 
     /********************
      * Internal functions
      ********************/
-
-    // Parses a given file into an elementtree object
-    function parseElementtreeSync(filename) {
-        var contents = fs.readFileSync(filename, 'utf-8');
-        if(contents) {
-            //Windows is the BOM. Skip the Byte Order Mark.
-            contents = contents.substring(contents.indexOf('<'));
-        }
-        return new et.ElementTree(et.XML(contents));
-    }
 
     // Converts an elementtree object to an xml string.  Since this is used for plist values, we don't care about attributes
     function eltreeToXmlString(data) {
@@ -71,21 +58,11 @@ var platformConfig = (function(){
         return el;
     }
 
-    // Parses the config.xml into an elementtree object and stores in the config object
-    function getConfigXml() {
-        if(!configXmlData) {
-            configXmlData = parseElementtreeSync(path.join(rootdir, 'config.xml'));
-        }
-
-        return configXmlData;
-    }
 
     /* Retrieves all <preferences ..> from config.xml and returns a map of preferences with platform as the key.
      *  If a platform is supplied, common prefs + platform prefs will be returned, otherwise just common prefs are returned.
      */
     function getPreferences(platform) {
-        var configXml = getConfigXml();
-
         //init common config.xml prefs if we haven't already
         if(!preferencesData) {
             preferencesData = {
@@ -109,7 +86,7 @@ var platformConfig = (function(){
      any config-file elements per platform that have the same target and parent, the last config-file element is used.
      */
     function getConfigFilesByTargetAndParent(platform) {
-        var configFileData = getConfigXml().findall('platform[@name=\'' + platform + '\']/config-file');
+        var configFileData = configXml.findall('platform[@name=\'' + platform + '\']/config-file');
 
         return  _.indexBy(configFileData, function(item) {
             var parent = item.attrib.parent;
@@ -217,8 +194,8 @@ var platformConfig = (function(){
     }
 
     // Updates the AndroidManifest.xml target file with data from config.xml
-    function updateAndroidManifest(targetFile, configItems) {
-        var tempManifest = parseElementtreeSync(targetFile),
+    function updateAndroidManifest(targetFilePath, configItems) {
+        var tempManifest = fileUtils.parseElementtreeSync(targetFilePath),
             root = tempManifest.getroot();
 
         _.each(configItems, function (item) {
@@ -255,15 +232,14 @@ var platformConfig = (function(){
                 });
             }
         });
-
-        fs.writeFileSync(targetFile, tempManifest.write({indent: 4}), 'utf-8');
+        fs.writeFileSync(targetFilePath, tempManifest.write({indent: 4}), 'utf-8');
     }
 
     /* Updates the *-Info.plist file with data from config.xml by parsing to an xml string, then using the plist
      module to convert the data to a map.  The config.xml data is then replaced or appended to the original plist file
      */
-    function updateIosPlist (targetFile, configItems) {
-        var infoPlist = plist.parse(fs.readFileSync(targetFile, 'utf-8')),
+    function updateIosPlist (targetFilePath, configItems) {
+        var infoPlist = plist.parse(fs.readFileSync(targetFilePath, 'utf-8')),
             tempInfoPlist;
 
         _.each(configItems, function (item) {
@@ -273,12 +249,12 @@ var platformConfig = (function(){
 
             var configPlistObj = plist.parse(plistXml);
             infoPlist[key] = configPlistObj[key];
-            debug("Write to plist; key="+key+"; value="+tostr(configPlistObj[key]));
+            fileUtils.debug("Write to plist; key="+key+"; value="+tostr(configPlistObj[key]));
         });
 
         tempInfoPlist = plist.build(infoPlist);
         tempInfoPlist = tempInfoPlist.replace(/<string>[\s\r\n]*<\/string>/g,'<string></string>');
-        fs.writeFileSync(targetFile, tempInfoPlist, 'utf-8');
+        fs.writeFileSync(targetFilePath, tempInfoPlist, 'utf-8');
     }
 
     /**
@@ -323,10 +299,43 @@ var platformConfig = (function(){
                 (!item.buildType || item.buildType.toLowerCase() === block['name'].toLowerCase())){
                 block["buildSettings"][item.name] = item.value;
                 modified = true;
-                debug(mode+" XCBuildConfiguration key='"+item.name+"' to value='"+item.value+"' for build type='"+block['name']+"' in block='"+blockName+"'");
+                fileUtils.debug(mode+" XCBuildConfiguration key='"+item.name+"' to value='"+item.value+"' for build type='"+block['name']+"' in block='"+blockName+"'");
             }
         }
         return modified;
+    }
+
+
+    function ensureBackup(targetFilePath, platform, targetFileName){
+        var backupDirPath = path.join(cwd, 'plugins', context.opts.plugin.id, "backup"),
+            backupPlatformPath = path.join(backupDirPath, platform),
+            backupFilePath = path.join(backupPlatformPath, targetFileName);
+
+
+        var backupDirExists = fileUtils.directoryExists(backupDirPath);
+        if(!backupDirExists){
+            fileUtils.createDirectory(backupDirPath);
+            fileUtils.debug("Created backup directory: "+backupDirPath);
+        }
+
+        var backupPlatformExists = fileUtils.directoryExists(backupPlatformPath);
+        if(!backupPlatformExists){
+            fileUtils.createDirectory(backupPlatformPath);
+            fileUtils.debug("Created backup platform directory: "+backupPlatformPath);
+        }
+
+        var backupFileExists = fileUtils.fileExists(backupFilePath);
+        if(!backupFileExists){
+            fs.copySync(targetFilePath, backupFilePath);
+            fileUtils.debug("Backed up "+targetFilePath+" to "+backupFilePath);
+        }else{
+            fileUtils.debug("Backup exists for '"+targetFileName+"' at: "+backupFilePath);
+        }
+
+        if(!updatedFiles[targetFilePath]){
+            fileUtils.log("Applied custom config from config.xml to "+targetFilePath);
+            updatedFiles[targetFilePath] = true;
+        }
     }
 
     /************
@@ -340,22 +349,24 @@ var platformConfig = (function(){
                 platformPath = path.join(rootdir, 'platforms', platform);
 
             _.each(configData, function (configItems, targetFileName) {
-                var projectName, targetFile;
+                var targetFilePath;
 
                 if (platform === 'ios') {
-                    projectName = getConfigXml().findtext('name');
                     if (targetFileName.indexOf("Info.plist") > -1) {
-                        targetFile = path.join(platformPath, projectName, projectName + '-Info.plist');
-                        updateIosPlist(targetFile, configItems);
+                        targetFileName =  projectName + '-Info.plist';
+                        targetFilePath = path.join(platformPath, projectName, targetFileName);
+                        ensureBackup(targetFilePath, platform, targetFileName);
+                        updateIosPlist(targetFilePath, configItems);
                     }else if (targetFileName === "project.pbxproj") {
-                        targetFile = path.join(platformPath, projectName + '.xcodeproj', targetFileName);
-                        updateIosPbxProj(targetFile, configItems);
+                        targetFilePath = path.join(platformPath, projectName + '.xcodeproj', targetFileName);
+                        ensureBackup(targetFilePath, platform, targetFileName);
+                        updateIosPbxProj(targetFilePath, configItems);
                     }
 
-
                 } else if (platform === 'android' && targetFileName === 'AndroidManifest.xml') {
-                    targetFile = path.join(platformPath, targetFileName);
-                    updateAndroidManifest(targetFile, configItems);
+                    targetFilePath = path.join(platformPath, targetFileName);
+                    ensureBackup(targetFilePath, platform, targetFileName);
+                    updateAndroidManifest(targetFilePath, configItems);
                 }
             });
         }
@@ -366,6 +377,10 @@ var platformConfig = (function(){
 module.exports = function(ctx) {
     context = ctx;
     rootdir = context.opts.projectRoot;
+
+    fileUtils = require(path.resolve(rootdir, "plugins", ctx.opts.plugin.id, "hooks", "fileUtils.js"))(context);
+    configXml = fileUtils.getConfigXml();
+    projectName = fileUtils.getProjectName();
 
     // go through each of the platform directories that have been prepared
     var platforms = _.filter(fs.readdirSync('platforms'), function (file) {
