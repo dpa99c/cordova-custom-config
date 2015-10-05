@@ -19,6 +19,11 @@ var platformConfig = (function(){
      * Internal properties
      *********************/
 
+    var androidActivityNames = [
+        "CordovaApp",  // Cordova <= 4.2.0
+        "MainActivity" // Cordova >= 4.3.0
+    ];
+
     /*  Global object that defines the available custom preferences for each platform.
      Maps a config.xml preference to a specific target file, parent element, and destination attribute or element
      */
@@ -27,9 +32,9 @@ var platformConfig = (function(){
             'android-manifest-hardwareAccelerated': {target: 'AndroidManifest.xml', parent: './', destination: 'android:hardwareAccelerated'},
             'android-installLocation': {target: 'AndroidManifest.xml', parent: './', destination: 'android:installLocation'},
             'android-activity-hardwareAccelerated': {target: 'AndroidManifest.xml', parent: 'application', destination: 'android:hardwareAccelerated'},
-            'android-configChanges': {target: 'AndroidManifest.xml', parent: 'application/activity[@android:name=\'CordovaApp\']', destination: 'android:configChanges'},
-            'android-launchMode': {target: 'AndroidManifest.xml', parent: 'application/activity[@android:name=\'CordovaApp\']', destination: 'android:launchMode'},
-            'android-theme': {target: 'AndroidManifest.xml', parent: 'application/activity[@android:name=\'CordovaApp\']', destination: 'android:theme'},
+            'android-configChanges': {target: 'AndroidManifest.xml', parent: 'application/activity[@android:name=\'{ActivityName}\']', destination: 'android:configChanges'},
+            'android-launchMode': {target: 'AndroidManifest.xml', parent: 'application/activity[@android:name=\'{ActivityName}\']', destination: 'android:launchMode'},
+            'android-theme': {target: 'AndroidManifest.xml', parent: 'application/activity[@android:name=\'{ActivityName}\']', destination: 'android:theme'},
             'android-windowSoftInputMode': {target: 'AndroidManifest.xml', parent: 'application/activity[@android:name=\'CordovaApp\']', destination: 'android:windowSoftInputMode'}
         },
         'ios': {}
@@ -201,9 +206,18 @@ var platformConfig = (function(){
         _.each(configItems, function (item) {
             // if parent is not found on the root, child/grandchild nodes are searched
             var parentEl = root.find(item.parent) || root.find('*/' + item.parent),
+                parentSelector,
                 data = item.data,
                 childSelector = item.destination,
                 childEl;
+
+            _.each(androidActivityNames, function(activityName){
+                if(parentEl){
+                    return;
+                }
+                parentSelector = item.parent.replace("{ActivityName}", activityName);
+                parentEl = root.find(parentSelector) || root.find('*/' + parentSelector);
+            });
 
             if(!parentEl) {
                 return;
