@@ -5,6 +5,7 @@ cordova-custom-config plugin
     * [Why should I use it?](#why-should-i-use-it)
 * [Installation](#installation)
 * [Usage](#usage)
+    * [Backups](#backups)
     * [Preferences](#preferences)
     * [Config Files](#config-files)
     * [Android](#android)
@@ -34,7 +35,7 @@ Since the custom preferences are entered into the config.xml, they can be commit
 and maintained between builds or even if a platform is removed and re-added.
 
 As of version 1.1.0, changes made by the plugin are reversible, so removing a custom element from the config.xml will remove it from the platform configuration file on the next `prepare` operation,
-and uninstalling the plugin will restore the original configuration files<sup>[*](#note_originals)</sup>.
+and uninstalling the plugin will restore the original configuration files.
 
 The plugin is registered on [npm](https://www.npmjs.com/package/cordova-custom-config) (requires Cordova CLI 5.0.0+) as `cordova-custom-config`
 
@@ -68,12 +69,13 @@ As such, all you need to do to "use" this plugin is include the relevant keys in
 
 NOTE: There are no run-time source files included in this plugin - it is simply a convenient package of hook scripts.
 
-Changes made by the plugin are reversible, so removing a custom element from the config.xml will remove it from the platform configuration file on the next `prepare` operation and uninstalling the plugin will restore the original configuration files<sup>[*](#note_originals)</sup>.
+## Backups
 
-<a id="note_originals">NOTE</a>: "original configuration files" means those that were present before the first `prepare` operation was run with the plugin installed.
-The plugin restores these backups before each `prepare` operation, allowing Cordova to make modifications and then the plugin to make further modifications after the `prepare`.
-Consequently, any manual changes made to the platform configuration files after installing the plugin will be overwritten.
-However, the point of this plugin is NOT to need to make manual changes to the platform configuration files!
+When the first `prepare` operation runs after the plugin is installed, it will make backup copies of the original configuration files before it makes any modifications. These backup copies are stored in `plugins/cordova-custom-config/backups/` and are restored before each `prepare` operation, allowing Cordova to make modifications and then the plugin to make further modifications after the `prepare`.
+
+This means changes made by the plugin are reversible, so removing a custom element from the config.xml will remove it from the platform configuration file on the next `prepare` operation and uninstalling the plugin will restore the configuration files to their original state (before the plugin made any modifications).
+
+Consequently, any manual changes made to the platform configuration files in `platforms/` **after** installing the plugin will be overwritten by the plugin on the next `prepare` operation. To make manual changes persist, either edit the backup files directly in `plugins/cordova-custom-config/backups/`, or edit them in place in `platforms/` then copy them to overwrite the versions in `plugins/cordova-custom-config/backups/`.
 
 ## Preferences
 
