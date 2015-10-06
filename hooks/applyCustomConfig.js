@@ -35,7 +35,7 @@ var platformConfig = (function(){
             'android-configChanges': {target: 'AndroidManifest.xml', parent: 'application/activity[@android:name=\'{ActivityName}\']', destination: 'android:configChanges'},
             'android-launchMode': {target: 'AndroidManifest.xml', parent: 'application/activity[@android:name=\'{ActivityName}\']', destination: 'android:launchMode'},
             'android-theme': {target: 'AndroidManifest.xml', parent: 'application/activity[@android:name=\'{ActivityName}\']', destination: 'android:theme'},
-            'android-windowSoftInputMode': {target: 'AndroidManifest.xml', parent: 'application/activity[@android:name=\'CordovaApp\']', destination: 'android:windowSoftInputMode'}
+            'android-windowSoftInputMode': {target: 'AndroidManifest.xml', parent: 'application/activity[@android:name=\'{ActivityName}\']', destination: 'android:windowSoftInputMode'}
         },
         'ios': {}
     };
