@@ -24,6 +24,8 @@ var PLATFORM_CONFIG_FILES = {
 function restorePlatformBackups(platform){
     var configFiles = PLATFORM_CONFIG_FILES[platform],
         backupFile, backupFileName, backupFilePath, backupFileExists, targetFilePath;
+
+    fileUtils.debug("Checking to see if there are backups to restore...");
     for(backupFile in configFiles){
         backupFileName = parseProjectName(backupFile);
         backupFilePath = path.join(cwd, 'plugins', context.opts.plugin.id, "backup", platform, backupFileName);
@@ -47,7 +49,7 @@ module.exports = function(ctx) {
     fileUtils = require(path.resolve(rootdir, "plugins", ctx.opts.plugin.id, "hooks", "fileUtils.js"))(context);
     configXml = fileUtils.getConfigXml();
     projectName = fileUtils.getProjectName();
-    logFn = context.hook === "before_plugin_rm" ? fileUtils.log : fileUtils.debug;
+    logFn = context.hook === "before_plugin_uninstall" ? fileUtils.log : fileUtils.debug;
 
     // go through each of the platform directories
     var platforms = _.filter(fs.readdirSync('platforms'), function (file) {
