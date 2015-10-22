@@ -134,7 +134,7 @@ var platformConfig = (function(){
                     prefData = {
                         type: parts[1],
                         name: parts[2],
-                        value: preference.attrib.value
+                        value: '"'+preference.attrib.value+'"'
                 };
                 if(preference.attrib.buildType){
                     prefData["buildType"] = preference.attrib.buildType;
