@@ -71,11 +71,15 @@ NOTE: There are no run-time source files included in this plugin - it is simply 
 
 ## Backups
 
-When the first `prepare` operation runs after the plugin is installed, it will make backup copies of the original configuration files before it makes any modifications. These backup copies are stored in `plugins/cordova-custom-config/backup/` and are restored before each `prepare` operation, allowing Cordova to make modifications and then the plugin to make further modifications after the `prepare`.
+When the first `prepare` operation runs after the plugin is installed, it will make backup copies of the original configuration files before it makes any modifications. These backup copies are stored in `plugins/cordova-custom-config/backup/` and by default are restored before each `prepare` operation, allowing Cordova to make modifications and then the plugin to make further modifications after the `prepare`.
 
 This means changes made by the plugin are reversible, so removing a custom element from the config.xml will remove it from the platform configuration file on the next `prepare` operation and uninstalling the plugin will restore the configuration files to their original state (before the plugin made any modifications).
 
-Consequently, any manual changes made to the platform configuration files in `platforms/` **after** installing the plugin will be overwritten by the plugin on the next `prepare` operation. To make manual changes persist, either edit the backup files directly in `plugins/cordova-custom-config/backup/`, or edit them in place in `platforms/` then copy them to overwrite the versions in `plugins/cordova-custom-config/backup/`.
+Consequently, any manual changes made to the platform configuration files in `platforms/` **after** installing the plugin will be overwritten by the plugin on the next `prepare` operation.
+
+To prevent auto-restoring of backups and make manual changes to platform configuration files persist, add the following preference inside the top-level `<widget>` element:
+
+    <preference name="cordova-custom-config-autorestore" value="false" />
 
 ## Preferences
 
