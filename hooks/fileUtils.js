@@ -12,7 +12,7 @@ var fileUtils = (function(){
     /**********************
      * Internal properties
      *********************/
-    var context, configXmlData;
+    var api, context, configXmlData, settings;
 
     /********************
      * Internal functions
@@ -21,7 +21,7 @@ var fileUtils = (function(){
     /************
      * Public API
      ************/
-    return{
+    api = {
         // Parses a given file into an elementtree object
         parseElementtreeSync: function(filename) {
             var contents = fs.readFileSync(filename, 'utf-8');
@@ -37,6 +37,20 @@ var fileUtils = (function(){
                 configXmlData = fileUtils.parseElementtreeSync(path.join(context.opts.projectRoot, 'config.xml'));
             }
             return configXmlData;
+        },
+        // Returns plugin settings from config.xml
+        getSettings: function (){
+            if(!settings){
+                settings = {};
+                var name, preferences = api.getConfigXml().findall("preference");
+                _.each(preferences, function (preference) {
+                    name = preference.attrib.name;
+                    if(name.match("cordova-custom-config")){
+                        settings[name.split('-').pop()] = preference.attrib.value;
+                    }
+                });
+            }
+            return settings;
         },
         // Returns project name from config.xml
         getProjectName: function(){
@@ -75,7 +89,8 @@ var fileUtils = (function(){
         log: function(msg){
             console.log(context.opts.plugin.id+": "+msg);
         }
-    }
+    };
+    return api;
 
 })();
 

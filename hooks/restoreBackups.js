@@ -8,7 +8,7 @@ var fs = require('fs-extra'),
     fileUtils;
 
 // global vars
-var rootdir, context, configXml, projectName, logFn;
+var rootdir, context, configXml, projectName, logFn, settings;
 
 // global consts
 var PLATFORM_CONFIG_FILES = {
@@ -50,6 +50,12 @@ module.exports = function(ctx) {
     configXml = fileUtils.getConfigXml();
     projectName = fileUtils.getProjectName();
     logFn = context.hook === "before_plugin_uninstall" ? fileUtils.log : fileUtils.debug;
+
+    settings = fileUtils.getSettings();
+    if(typeof(settings.autorestore) !== "undefined" && settings.autorestore == "false"){
+        fileUtils.log("Skipping auto-restore of config file backup(s) due to config.xml preference");
+        return;
+    }
 
     // go through each of the platform directories
     var platforms = _.filter(fs.readdirSync('platforms'), function (file) {

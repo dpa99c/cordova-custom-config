@@ -11,7 +11,7 @@ var fs = require('fs-extra'),
     tostr = require('tostr'),
     fileUtils;
 
-var rootdir, context, configXml, projectName, updatedFiles = {};
+var rootdir, context, configXml, projectName, settings = {}, updatedFiles = {};
 
 var platformConfig = (function(){
 
@@ -67,7 +67,7 @@ var platformConfig = (function(){
     /* Retrieves all <preferences ..> from config.xml and returns a map of preferences with platform as the key.
      *  If a platform is supplied, common prefs + platform prefs will be returned, otherwise just common prefs are returned.
      */
-    function getPreferences(platform) {
+    function getPlatformPreferences(platform) {
         //init common config.xml prefs if we haven't already
         if(!preferencesData) {
             preferencesData = {
@@ -106,15 +106,15 @@ var platformConfig = (function(){
     // Parses the config.xml's preferences and config-file elements for a given platform
     function parseConfigXml(platform) {
         var configData = {};
-        parsePreferences(configData, platform);
+        parsePlatformPreferences(configData, platform);
         parseConfigFiles(configData, platform);
 
         return configData;
     }
 
     // Retrieves the config.xml's pereferences for a given platform and parses them into JSON data
-    function parsePreferences(configData, platform) {
-        var preferences = getPreferences(platform);
+    function parsePlatformPreferences(configData, platform) {
+        var preferences = getPlatformPreferences(platform);
         switch(platform){
             case "ios":
                 parseiOSPreferences(preferences, configData, platform);
@@ -135,7 +135,7 @@ var platformConfig = (function(){
                         type: parts[1],
                         name: parts[2],
                         value: '"'+preference.attrib.value+'"'
-                };
+                    };
                 if(preference.attrib.buildType){
                     prefData["buildType"] = preference.attrib.buildType;
                 }
