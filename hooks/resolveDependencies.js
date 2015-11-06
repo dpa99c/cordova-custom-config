@@ -5,7 +5,7 @@ It will check all necessary module dependencies and install the missing ones loc
 var exec = require('child_process').exec,
     path = require('path'),
     cwd = path.resolve(),
-    modules = ['read-package-json'];
+    modules = [];
 
 // region NPM specific
 
