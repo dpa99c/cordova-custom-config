@@ -395,6 +395,7 @@ module.exports = function(ctx) {
     fileUtils = require(path.resolve(rootdir, "plugins", ctx.opts.plugin.id, "hooks", "fileUtils.js"))(context);
     configXml = fileUtils.getConfigXml();
     projectName = fileUtils.getProjectName();
+    settings = fileUtils.getSettings();
 
     // go through each of the platform directories that have been prepared
     var platforms = _.filter(fs.readdirSync('platforms'), function (file) {
@@ -402,6 +403,11 @@ module.exports = function(ctx) {
     });
     _.each(platforms, function (platform) {
         platform = platform.trim().toLowerCase();
-        platformConfig.updatePlatformConfig(platform);
+        try{
+            platformConfig.updatePlatformConfig(platform);
+        }catch(e){
+            fileUtils.error("Error updating config for platform '"+platform+"': "+ e.message);
+            if(settings.stoponerror) throw e;
+        }
     });
 };

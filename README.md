@@ -14,6 +14,7 @@ cordova-custom-config plugin
     * [iOS](#ios)
         * [iOS preferences](#ios-preferences)
         * [iOS example](#ios-example)
+    * [Plugin preferences](#plugin-preferences)
 * [Example project](#example-project)
 * [TODO](#todo)
 * [Credits](#credits)
@@ -218,6 +219,19 @@ The plugin currently supports setting of custom settings in the project plist (`
         </config-file>
     </platform>
 
+## Plugin preferences
+
+The plugin supports some preferences which are used to customise the behaviour of the plugin. Each preference name is prefixed with `cordova-custom-config` to avoid name clashes, for example:
+
+    <preference name="cordova-custom-config-autorestore" value="true" />
+
+The following preferences are currently supported:
+
+- `cordova-custom-config-autorestore` - if true, the plugin will restore a backup of platform configuration files taken at plugin installation time.
+See [Backups](#backups) section for details. Defaults to true.
+- `cordova-custom-config-stoponerror` - if true and an error occurs while updating config for a given platform during a `prepare` operation, the error will cause the `prepare` operation to fail.
+If false, the plugin will log the error but will proceed and attempt to update any other platforms, before allowing the `prepare` operation to continue.
+ Defaults to false.
 
 # Example project
 

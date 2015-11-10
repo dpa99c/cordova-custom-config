@@ -63,6 +63,11 @@ module.exports = function(ctx) {
     });
     _.each(platforms, function (platform) {
         platform = platform.trim().toLowerCase();
-        restorePlatformBackups(platform);
+        try{
+            restorePlatformBackups(platform);
+        }catch(e){
+            fileUtils.error("Error restoring backups for platform '"+platform+"': "+ e.message);
+            if(settings.stoponerror) throw e;
+        }
     });
 };

@@ -88,6 +88,12 @@ var fileUtils = (function(){
         },
         log: function(msg){
             console.log(context.opts.plugin.id+": "+msg);
+        },
+        warn: function(msg){
+            console.warn(context.opts.plugin.id+": "+msg);
+        },
+        error: function(msg){
+            console.error(context.opts.plugin.id+": "+msg);
         }
     };
     return api;
