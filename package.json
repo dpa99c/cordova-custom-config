@@ -28,7 +28,7 @@
         "plist",
         "manifest"
     ],
-    
+
     "engines": [
         {
             "name": "cordova",
@@ -36,11 +36,12 @@
         }
     ],
     "dependencies": {
+        "fs-extra": "*",
         "lodash": "*",
         "elementtree": "*",
         "plist": "*",
         "xcode": "*",
         "tostr": "*",
-        "fs-extra": "*"
+        "dummy": "*"
     }
 }
