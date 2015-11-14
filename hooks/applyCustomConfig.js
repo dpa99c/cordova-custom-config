@@ -26,6 +26,8 @@ var applyCustomConfig = (function(){
         "MainActivity" // Cordova >= 4.3.0
     ];
 
+    var xcconfigs = ["build.xcconfig", "build-extras.xcconfig", "build-debug.xcconfig", "build-release.xcconfig"];
+
     /*  Global object that defines the available custom preferences for each platform.
      Maps a config.xml preference to a specific target file, parent element, and destination attribute or element
      */
@@ -136,7 +138,7 @@ var applyCustomConfig = (function(){
                     prefData = {
                         type: parts[1],
                         name: parts[2],
-                        value: '"'+preference.attrib.value+'"'
+                        value: preference.attrib.value
                     };
                 if(preference.attrib.buildType){
                     prefData["buildType"] = preference.attrib.buildType;
@@ -311,14 +313,65 @@ var applyCustomConfig = (function(){
         var modified = false;
         for(var blockName in buildConfig){
             var block = buildConfig[blockName];
-            if(typeof(block) === "object" && (block["buildSettings"][item.name] || mode === "add") &&
+
+            if(typeof(block) !== "object" || !(block["buildSettings"])) continue;
+            var literalMatch = !!block["buildSettings"][item.name];
+            var quotedMatch = !!block["buildSettings"][quoteEscape(item.name)];
+
+            if((literalMatch || quotedMatch || mode === "add") &&
                 (!item.buildType || item.buildType.toLowerCase() === block['name'].toLowerCase())){
-                block["buildSettings"][item.name] = item.value;
+                var name = literalMatch ? item.name : quoteEscape(item.name);
+                block["buildSettings"][name] = quoteEscape(item.value);
                 modified = true;
                 logger.debug(mode+" XCBuildConfiguration key='"+item.name+"' to value='"+item.value+"' for build type='"+block['name']+"' in block='"+blockName+"'");
             }
         }
         return modified;
+    }
+
+    /**
+     * Checks if Cordova's .xcconfig files contain overrides for the given setting, and if so overwrites the value in the .xcconfig file(s).
+     */
+    function updateXCConfigs(configItems, platformPath){
+        xcconfigs.forEach(function(fileName){
+            updateXCConfig(platformPath, fileName, configItems)
+        });
+    }
+
+    function updateXCConfig(platformPath, targetFileName, configItems){
+        var modified = false,
+            targetFilePath = path.join(platformPath, 'cordova', targetFileName);
+
+        // Read file contents
+        logger.debug("Reading "+targetFileName);
+        var fileContents = fs.readFileSync(targetFilePath, 'utf-8');
+
+        _.each(configItems, function (item) {
+            var escapedName = regExpEscape(item.name);
+            // Check if file contains item and replace if so (respecting buildType)
+            if(fileContents.match(escapedName) && (!item.buildType
+                || (item.buildType.toLowerCase() == "debug" && !targetFileName.match("release"))
+                || (item.buildType.toLowerCase() == "release" && !targetFileName.match("debug"))  )){
+                fileContents = fileContents.replace(new RegExp("\n\"?"+escapedName+"\"?.*"), "\n"+quoteEscape(item.name)+" = "+quoteEscape(item.value));
+                logger.debug("Overwrote "+item.name+" with '"+item.value+"' in "+targetFileName);
+                modified = true;
+            }
+        });
+
+        if(modified){
+            ensureBackup(targetFilePath, 'ios', targetFileName);
+            fs.writeFileSync(targetFilePath, fileContents, 'utf-8');
+            logger.debug("Overwrote "+targetFileName);
+        }
+
+    }
+
+    function regExpEscape(literal_string) {
+        return literal_string.replace(/[-[\]{}()*+!<=:?.\/\\^$|#\s,]/g, '\\$&');
+    }
+
+    function quoteEscape(value){
+        return '"'+value+'"';
     }
 
 
@@ -372,6 +425,7 @@ var applyCustomConfig = (function(){
                     targetFilePath = path.join(platformPath, projectName + '.xcodeproj', targetFileName);
                     ensureBackup(targetFilePath, platform, targetFileName);
                     updateIosPbxProj(targetFilePath, configItems);
+                    updateXCConfigs(configItems, platformPath);
                 }
 
             } else if (platform === 'android' && targetFileName === 'AndroidManifest.xml') {
@@ -392,12 +446,12 @@ var applyCustomConfig = (function(){
 
         // Load modules
         fs = require('fs-extra'),
-        _ = require('lodash'),
-        et = require('elementtree'),
-        plist = require('plist'),
-        xcode = require('xcode'),
-        tostr = require('tostr'),
-        fileUtils = require(path.resolve(hooksPath, "fileUtils.js"))(context);
+            _ = require('lodash'),
+            et = require('elementtree'),
+            plist = require('plist'),
+            xcode = require('xcode'),
+            tostr = require('tostr'),
+            fileUtils = require(path.resolve(hooksPath, "fileUtils.js"))(context);
 
         configXml = fileUtils.getConfigXml();
         projectName = fileUtils.getProjectName();

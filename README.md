@@ -166,16 +166,30 @@ The plugin currently supports setting of custom settings in the project plist (`
 7. By default, values will be applied to both "Release" and "Debug" `XCBuildConfiguration` blocks.
 8. However, the block type can be specified by adding a `buildType` attribute to the `<preference>` element in the config.xml: value is either `debug` or `release`
 9. For example `<preference name="ios-XCBuildConfiguration-IPHONEOS_DEPLOYMENT_TARGET" value="7.0" buildType="release" />`
+10. Cordova uses some `.xcconfig` files in `/platforms/ios/cordova/` to override Xcode project settings with build-type specific values.
+If a preference is defined in the `config.xml` which exists in one of the `.xcconfig` files, the value in the `config.xml` will be used to overwrite the value in the `.xcconfig` file,
+as well as in the Xcode project file.
+11. By default, a backup will be made of any modified `.xcconfig` file. Auto-restore of backups can be disabled by setting `<preference name="cordova-custom-config-autorestore" value="true" />`
+12. If the preference contains a buildType attribute, it will be applied appropriately to the `build-debug.xcconfig` or `build-release.xcconfig` files.
 
 ### iOS example
 
     <platform name="ios">
 
-        <!-- Set ENABLE_BITCODE to NO in XCode project file -->
-        <preference name="ios-XCBuildConfiguration-ENABLE_BITCODE" value="NO" />
+        <!-- ENABLE_BITCODE to YES in Xcode project file and override NO value in /ios/cordova/build.xcconfig -->
+        <preference name="ios-XCBuildConfiguration-ENABLE_BITCODE" value="YES" />
 
-        <!-- Set deploy target SDK to iOS 7.0 but only for release builds -->
+        <!-- Set deploy target SDKs for release and debug builds -->
+        <preference name="ios-XCBuildConfiguration-IPHONEOS_DEPLOYMENT_TARGET" value="9.1" buildType="debug" />
         <preference name="ios-XCBuildConfiguration-IPHONEOS_DEPLOYMENT_TARGET" value="7.0" buildType="release" />
+
+        <!-- Custom code signing profiles (overriding those already in /ios/cordova/*.xcconfig -->
+        <preference name="ios-XCBuildConfiguration-CODE_SIGN_IDENTITY" value="Custom Developer" buildType="debug" />
+        <preference name="ios-XCBuildConfiguration-CODE_SIGN_IDENTITY[sdk=iphoneos*]" value="Custom Developer (All iOS SDKs)" buildType="debug" />
+        <preference name="ios-XCBuildConfiguration-CODE_SIGN_IDENTITY[sdk=iphoneos9.1]" value="Custom Developer (iOS 9.1)" buildType="debug" />
+        <preference name="ios-XCBuildConfiguration-CODE_SIGN_IDENTITY" value="Custom Distribution" buildType="release" />
+        <preference name="ios-XCBuildConfiguration-CODE_SIGN_IDENTITY[sdk=iphoneos*]" value="Custom Distribution (All iOS SDK)" buildType="release" />
+        <preference name="ios-XCBuildConfiguration-CODE_SIGN_IDENTITY[sdk=iphoneos9.1]" value="Custom Distribution (iOS 9.1)" buildType="release" />
 
         <!-- Set orientation on iPhone -->
         <config-file platform="ios" target="*-Info.plist" parent="UISupportedInterfaceOrientations">
