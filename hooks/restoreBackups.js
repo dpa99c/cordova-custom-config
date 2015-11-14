@@ -21,7 +21,11 @@ var restoreBackups = (function(){
     var PLATFORM_CONFIG_FILES = {
         "ios":{
             "{projectName}-Info.plist": "{projectName}/{projectName}-Info.plist",
-            "project.pbxproj": "{projectName}.xcodeproj/project.pbxproj"
+            "project.pbxproj": "{projectName}.xcodeproj/project.pbxproj",
+            "build.xcconfig": "cordova/build.xcconfig",
+            "build-extras.xcconfig": "cordova/build-extras.xcconfig",
+            "build-debug.xcconfig": "cordova/build-debug.xcconfig",
+            "build-release.xcconfig": "cordova/build-release.xcconfig"
         },
         "android":{
             "AndroidManifest.xml": "AndroidManifest.xml"
@@ -95,5 +99,10 @@ module.exports = function(ctx) {
     hooksPath = path.resolve(ctx.opts.projectRoot, "plugins", ctx.opts.plugin.id, "hooks");
     logger = require(path.resolve(hooksPath, "logger.js"))(ctx);
     logger.debug("Running restoreBackups.js");
-    require(path.resolve(hooksPath, "resolveDependencies.js"))(ctx, restoreBackups.init.bind(this, ctx));
+
+    if(ctx.hook === "before_plugin_uninstall"){
+        restoreBackups.init(ctx); // no time to check for deps or files will get removed by plugin rm before backups can be restored
+    }else{
+        require(path.resolve(hooksPath, "resolveDependencies.js"))(ctx, restoreBackups.init.bind(this, ctx));
+    }
 };
