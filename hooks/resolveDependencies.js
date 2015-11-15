@@ -42,7 +42,7 @@ var resolveDependencies = (function(){
           modules.push(k);
         }
         installRequiredNodeModules(function(){
-          logger.log('All module dependencies are installed');
+          logger.debug('All module dependencies are installed');
           callback();
         });
       }
