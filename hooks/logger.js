@@ -7,6 +7,14 @@ var logger = (function(){
      *********************/
     var logger, context;
 
+    try{
+        require('colors');
+    }catch(e){}
+
+    function prefixMsg(msg){
+        return context.opts.plugin.id+": "+msg;
+    }
+
     /************
      * Public API
      ************/
@@ -16,17 +24,45 @@ var logger = (function(){
         },
         debug: function(msg){
             if(context.opts.verbose){
-                console.log(context.opts.plugin.id+": "+msg);
+                msg = prefixMsg(msg);
+                try{
+                    console.log(msg.green);
+                }catch(e){
+                    console.log(msg);
+                }
             }
         },
         log: function(msg){
-            console.log(context.opts.plugin.id+": "+msg);
+            msg = prefixMsg(msg);
+            try{
+                console.log(msg.white);
+            }catch(e){
+                console.log(msg);
+            }
+        },
+        info: function(msg){
+            msg = prefixMsg(msg);
+            try{
+                console.log(msg.blue);
+            }catch(e){
+                console.info(msg);
+            }
         },
         warn: function(msg){
-            console.warn(context.opts.plugin.id+": "+msg);
+            msg = prefixMsg(msg);
+            try{
+                console.log(msg.yellow);
+            }catch(e){
+                console.warn(msg);
+            }
         },
         error: function(msg){
-            console.error(context.opts.plugin.id+": "+msg);
+            msg = prefixMsg(msg);
+            try{
+                console.log(msg.red);
+            }catch(e){
+                console.error(msg);
+            }
         }
     };
     return logger;
