@@ -157,6 +157,7 @@ var applyCustomConfig = (function(){
         var type = 'preference';
 
         _.each(preferences, function (preference) {
+            // Extract pre-defined preferences (deprecated)
             var prefMappingData = preferenceMappingData[platform][preference.attrib.name],
                 target,
                 prefData;
@@ -168,8 +169,25 @@ var applyCustomConfig = (function(){
                     destination: prefMappingData.destination,
                     data: preference
                 };
-
                 target = prefMappingData.target;
+                logger.warn("WARNING Pre-defined Android preference '"+preference.attrib.name+"' found.\n Pre-defined Android preferences are DEPRECATED in favour of more flexible xpath-style preferences and WILL BE REMOVED in cordova-custom-config@2");
+            }
+            else if(preference.attrib.name.match(/^android-manifest\//)){
+                // Extract manifest Xpath preferences
+                var parts = preference.attrib.name.split("/"),
+                    destination = parts.pop();
+                parts.shift();
+
+                prefData = {
+                    parent: parts.join("/") || "./",
+                    type: type,
+                    destination: destination,
+                    data: preference
+                };
+                target = "AndroidManifest.xml";
+            }
+
+            if(prefData){
                 if(!configData[target]) {
                     configData[target] = [];
                 }
@@ -228,7 +246,8 @@ var applyCustomConfig = (function(){
             }
 
             if(item.type === 'preference') {
-                parentEl.attrib[childSelector] = data.attrib['value'];
+                parentEl.attrib[childSelector.replace("@",'')] = data.attrib['value'];
+
             } else {
                 // since there can be multiple uses-permission elements, we need to select them by unique name
                 if(childSelector === 'uses-permission') {
@@ -465,6 +484,7 @@ var applyCustomConfig = (function(){
             platform = platform.trim().toLowerCase();
             try{
                 updatePlatformConfig(platform);
+                logger.info("Custom config applied to '"+platform+"' platform");
             }catch(e){
                 logger.error("Error updating config for platform '"+platform+"': "+ e.message);
                 if(settings.stoponerror) throw e;
