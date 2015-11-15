@@ -107,11 +107,42 @@ config-file blocks allow platform-specific chunks of config to be defined as an 
 
 ## Android
 
-The plugin currently supports setting of custom config only in AndroidManifest.xml.
-
 ### Android preferences
 
-Android preferences are constrained to those explicitly defined by the plugin. Currently supported preferences are:
+The plugin currently supports setting of custom config only in AndroidManifest.xml.
+
+For a list of possible manifest values see [http://developer.android.com/guide/topics/manifest/manifest-intro.html](http://developer.android.com/guide/topics/manifest/manifest-intro.html)
+
+### XPath prefernces
+
+As of `cordova-custom-config@1.1.8`, Android manifest preferences are set by using XPaths in the preference name to define which element attribute the value should be applied to.
+
+The preference name should be prefixed with `android-manifest` then follow with an XPath which specifies the element and attribute to apple the value to.
+
+For example:
+
+    <preference name="android-manifest/application/activity/@android:launchMode" value="singleTask" />
+
+This preference specifies that the `launchMode` attribute should be given a value of `singleTask`:
+
+    <activity android:launchMode="singleTask">
+
+If your manifest contains other activities, you should specify the activity name in the XPath. Note that the activity name for Cordova 4.2.0 and below was "CordovaApp" whereas Cordova 4.3.0 and above is "MainActivity". For example:
+
+    <preference name="android-manifest/application/activity[@android:name='MainActivity']/@android:launchMode" value="singleTask" />
+
+If the attribute you are setting is on the root `<manifest>` element, just omit the element name and specify the attribute. For example:
+
+    <preference name="android-manifest/@android:installLocation" value="auto" />
+
+### Pre-defined preferences
+
+Prior to `cordova-custom-config@1.1.8`, Android preferences were constrained to those explicitly defined by the plugin.
+While these are still supported for backward compatibility, their use has been deprecated and will result in a warning message in the console output.
+
+**NOTE**: Support pre-defined preferences will be removed in `cordova-custom-config@2`
+
+Supported pre-defined preferences are:
 
 * `android-manifest-hardwareAccelerated` => `//manifest@android:hardwareAccelerated`
 * `android-activity-hardwareAccelerated` => `//manifest/application@android:hardwareAccelerated`
@@ -121,24 +152,31 @@ Android preferences are constrained to those explicitly defined by the plugin. C
 * `android-theme` => `//manifest/application/activity@android:theme`
 * `android-windowSoftInputMode` => `//manifest/application/activity@android:windowSoftInputMode`
 
-NOTE: For all possible manifest values see http://developer.android.com/guide/topics/manifest/manifest-intro.html
-
 ### Android example
 
     <platform name="android">
+        <!--  custom preferences examples -->
+        <preference name="android-manifest/application/activity/@android:windowSoftInputMode" value="stateVisible" />
+        <preference name="android-manifest/@android:installLocation" value="auto" />
+        <preference name="android-manifest/application/@android:hardwareAccelerated" value="false" />
+        <preference name="android-manifest/@android:hardwareAccelerated" value="false" />
+        <preference name="android-manifest/application/activity/@android:configChanges" value="orientation" />
+        <preference name="android-manifest/application/activity/@android:theme" value="@android:style/Theme.Red.NoTitleBar" />
+
+        <!-- specify activity name -->
+        <preference name="android-manifest/application/activity[@android:name='MainActivity']/@android:launchMode" value="singleTask" />
+
+
         <!-- These preferences are actually available in Cordova by default although not currently documented -->
         <preference name="android-minSdkVersion" value="10" />
         <preference name="android-maxSdkVersion" value="22" />
         <preference name="android-targetSdkVersion" value="21" />
 
-         <!--  custom preferences examples -->
-         <preference name="android-windowSoftInputMode" value="stateVisible" />
-         <preference name="android-installLocation" value="auto" />
-         <preference name="android-launchMode" value="singleTop" />
-         <preference name="android-activity-hardwareAccelerated" value="false" />
-         <preference name="android-manifest-hardwareAccelerated" value="false" />
-         <preference name="android-configChanges" value="orientation" />
-         <preference name="android-theme" value="@android:style/Theme.Black.NoTitleBar" />
+        <!-- Or you can use a config-file element for them -->
+        <config-file target="AndroidManifest.xml" parent="/*">
+            <uses-sdk android:maxSdkVersion="22" android:minSdkVersion="10" android:targetSdkVersion="21" />
+        </config-file>
+
 
         <!-- custom config example -->
          <config-file target="AndroidManifest.xml" parent="/*">
