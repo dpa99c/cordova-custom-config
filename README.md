@@ -15,6 +15,7 @@ cordova-custom-config plugin
         * [iOS preferences](#ios-preferences)
         * [iOS example](#ios-example)
     * [Plugin preferences](#plugin-preferences)
+    * [Log output](#log-output)
 * [Example project](#example-project)
 * [TODO](#todo)
 * [Credits](#credits)
@@ -247,6 +248,12 @@ See [Backups](#backups) section for details. Defaults to true.
 If false, the plugin will log the error but will proceed and attempt to update any other platforms, before allowing the `prepare` operation to continue.
  Defaults to false.
 
+## Log output
+
+If you run the prepare operation with the `--verbose` command-line option, the plugin will output detail about the operations it's performing. Console messages are prefixed with `cordova-custom-config: `. For example:
+
+    cordova prepare ios --verbose
+
 # Example project
 
 An example project illustrating use of this plugin can be found here: [https://github.com/dpa99c/cordova-custom-config-example](https://github.com/dpa99c/cordova-custom-config-example)
@@ -254,6 +261,7 @@ An example project illustrating use of this plugin can be found here: [https://g
 # TODO
 
 See the [TODO list](https://github.com/dpa99c/cordova-custom-config/wiki/TODO) for planned features/improvements.
+
 
 # Credits
 
