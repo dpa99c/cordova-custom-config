@@ -143,6 +143,9 @@ var applyCustomConfig = (function(){
                 if(preference.attrib.buildType){
                     prefData["buildType"] = preference.attrib.buildType;
                 }
+                if(preference.attrib.quote){
+                    prefData["quote"] = preference.attrib.quote;
+                }
 
                 if(!configData[target]) {
                     configData[target] = [];
@@ -371,7 +374,9 @@ var applyCustomConfig = (function(){
             if(fileContents.match(escapedName) && (!item.buildType
                 || (item.buildType.toLowerCase() == "debug" && !targetFileName.match("release"))
                 || (item.buildType.toLowerCase() == "release" && !targetFileName.match("debug"))  )){
-                fileContents = fileContents.replace(new RegExp("\n\"?"+escapedName+"\"?.*"), "\n"+quoteEscape(item.name)+" = "+quoteEscape(item.value));
+                var name = (typeof item.quote == 'undefined' || item.quote == 'both' || item.quote == 'name' ? quoteEscape(item.name) : item.name);
+                var value = (typeof item.quote == 'undefined' || item.quote == 'both' || item.quote == 'value' ? quoteEscape(item.value) : item.value);
+                fileContents = fileContents.replace(new RegExp("\n\"?"+escapedName+"\"?.*"), "\n"+name+" = "+value);
                 logger.debug("Overwrote "+item.name+" with '"+item.value+"' in "+targetFileName);
                 modified = true;
             }
