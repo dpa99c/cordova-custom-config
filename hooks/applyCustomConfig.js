@@ -143,6 +143,9 @@ var applyCustomConfig = (function(){
                 if(preference.attrib.buildType){
                     prefData["buildType"] = preference.attrib.buildType;
                 }
+                if(preference.attrib.quote){
+                    prefData["quote"] = preference.attrib.quote;
+                }
 
                 if(!configData[target]) {
                     configData[target] = [];
@@ -271,6 +274,42 @@ var applyCustomConfig = (function(){
         });
         fs.writeFileSync(targetFilePath, tempManifest.write({indent: 4}), 'utf-8');
     }
+    // Updates target file with data from config.xml
+    function updateWp8Manifest(targetFilePath, configItems) {
+        var tempManifest = fileUtils.parseElementtreeSync(targetFilePath),
+            root = tempManifest.getroot();
+        _.each(configItems, function (item) {
+            // if parent is not found on the root, child/grandchild nodes are searched
+            var parentEl = root.find(item.parent) || root.find('*/' + item.parent),
+                parentSelector,
+                data = item.data,
+                childSelector = item.destination,
+                childEl;
+            if(!parentEl) {
+                return;
+            }
+
+            _.each(data.attrib, function (prop, propName) {
+                childSelector += '[@'+propName+'="'+prop+'"]';
+            });
+
+            childEl = parentEl.find(childSelector);
+            // if child element doesnt exist, create new element
+            if(!childEl) {
+                childEl = new et.Element(item.destination);
+                parentEl.append(childEl);
+            }
+
+            // copy all config.xml data except for the generated _id property
+            _.each(data, function (prop, propName) {
+                if(propName !== '_id') {
+                    childEl[propName] = prop;
+                }
+            });
+
+        });
+        fs.writeFileSync(targetFilePath, tempManifest.write({indent: 4}), 'utf-8');
+    }
 
     /* Updates the *-Info.plist file with data from config.xml by parsing to an xml string, then using the plist
      module to convert the data to a map.  The config.xml data is then replaced or appended to the original plist file
@@ -371,7 +410,9 @@ var applyCustomConfig = (function(){
             if(fileContents.match(escapedName) && (!item.buildType
                 || (item.buildType.toLowerCase() == "debug" && !targetFileName.match("release"))
                 || (item.buildType.toLowerCase() == "release" && !targetFileName.match("debug"))  )){
-                fileContents = fileContents.replace(new RegExp("\n\"?"+escapedName+"\"?.*"), "\n"+quoteEscape(item.name)+" = "+quoteEscape(item.value));
+                var name = (typeof item.quote == 'undefined' || item.quote == 'both' || item.quote == 'name' ? quoteEscape(item.name) : item.name);
+                var value = (typeof item.quote == 'undefined' || item.quote == 'both' || item.quote == 'value' ? quoteEscape(item.value) : item.value);
+                fileContents = fileContents.replace(new RegExp("\n\"?"+escapedName+"\"?.*"), "\n"+name+" = "+value);
                 logger.debug("Overwrote "+item.name+" with '"+item.value+"' in "+targetFileName);
                 modified = true;
             }
@@ -451,6 +492,10 @@ var applyCustomConfig = (function(){
                 targetFilePath = path.join(platformPath, targetFileName);
                 ensureBackup(targetFilePath, platform, targetFileName);
                 updateAndroidManifest(targetFilePath, configItems);
+            } else if (platform === 'wp8') {
+                targetFilePath = path.join(platformPath, targetFileName);
+                ensureBackup(targetFilePath, platform, targetFileName);
+                updateWp8Manifest(targetFilePath, configItems);
             }
         });
     }
