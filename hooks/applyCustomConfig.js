@@ -97,7 +97,7 @@ var applyCustomConfig = (function(){
     function getConfigFilesByTargetAndParent(platform) {
         var configFileData = configXml.findall('platform[@name=\'' + platform + '\']/config-file');
 
-        return  _.indexBy(configFileData, function(item) {
+        return  _.keyBy(configFileData, function(item) {
             var parent = item.attrib.parent;
             //if parent attribute is undefined /* or */, set parent to top level elementree selector
             if(!parent || parent === '/*' || parent === '*/') {
