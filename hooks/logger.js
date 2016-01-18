@@ -5,11 +5,13 @@ var logger = (function(){
     /**********************
      * Internal properties
      *********************/
-    var logger, context;
+    var logger, context, hasColors = true;
 
     try{
         require('colors');
-    }catch(e){}
+    }catch(e){
+        hasColors = false;
+    }
 
     function prefixMsg(msg){
         return context.opts.plugin.id+": "+msg;
@@ -25,42 +27,42 @@ var logger = (function(){
         debug: function(msg){
             if(context.opts.verbose){
                 msg = prefixMsg(msg);
-                try{
+                if(hasColors){
                     console.log(msg.green);
-                }catch(e){
+                }else{
                     console.log(msg);
                 }
             }
         },
         log: function(msg){
             msg = prefixMsg(msg);
-            try{
+            if(hasColors){
                 console.log(msg.white);
-            }catch(e){
+            }else{
                 console.log(msg);
             }
         },
         info: function(msg){
             msg = prefixMsg(msg);
-            try{
+            if(hasColors){
                 console.log(msg.blue);
-            }catch(e){
+            }else{
                 console.info(msg);
             }
         },
         warn: function(msg){
             msg = prefixMsg(msg);
-            try{
+            if(hasColors){
                 console.log(msg.yellow);
-            }catch(e){
+            }else{
                 console.warn(msg);
             }
         },
         error: function(msg){
             msg = prefixMsg(msg);
-            try{
+            if(hasColors){
                 console.log(msg.red);
-            }catch(e){
+            }else{
                 console.error(msg);
             }
         }
