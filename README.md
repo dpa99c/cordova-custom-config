@@ -113,7 +113,22 @@ The plugin currently supports setting of custom config only in AndroidManifest.x
 
 For a list of possible manifest values see [http://developer.android.com/guide/topics/manifest/manifest-intro.html](http://developer.android.com/guide/topics/manifest/manifest-intro.html)
 
-### XPath prefernces
+#### Android namespace attribute
+
+__Important:__ In order to user the `android:` namespace in preferences within your `config.xml`, you must include the android namespace attribute on the root `<widget>` element. The namespace attribute fragment is:
+
+    xmlns:android="http://schemas.android.com/apk/res/android"
+
+so your `<widget>` element should look something like:
+
+    <widget
+        id="com.my.app"
+        version="0.0.1"
+        xmlns="http://www.w3.org/ns/widgets"
+        xmlns:cdv="http://cordova.apache.org/ns/1.0"
+        xmlns:android="http://schemas.android.com/apk/res/android">
+
+### XPath preferences
 
 As of `cordova-custom-config@1.1.8`, Android manifest preferences are set by using XPaths in the preference name to define which element attribute the value should be applied to.
 
