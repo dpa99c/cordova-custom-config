@@ -2,7 +2,7 @@
 <plugin xmlns="http://www.phonegap.com/ns/plugins/1.0"
     xmlns:android="http://schemas.android.com/apk/res/android"
     id="cordova-custom-config"
-    version="1.1.10">
+    version="1.1.11">
 
     <name>cordova-custom-config</name>
     <description>Cordova/Phonegap plugin to update platform configuration files based on preferences and config-file data defined in config.xml</description>
@@ -23,4 +23,5 @@
     <hook src="hooks/restoreBackups.js" type="before_plugin_uninstall" />
     <hook src="hooks/applyCustomConfig.js" type="after_prepare" />
     <hook src="hooks/resolveDependencies.js" type="after_plugin_install"  />
+    <hook src="hooks/resolveDependencies.js" type="after_platform_add"  />
 </plugin>
