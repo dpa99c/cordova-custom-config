@@ -418,8 +418,8 @@ var applyCustomConfig = (function(){
 
             var itemBuildType = item.buildType ? item.buildType.toLowerCase() : "none";
 
-            var name = (typeof item.quote == 'undefined' || item.quote == 'both' || item.quote == 'name' ? quoteEscape(item.name) : item.name);
-            var value = (typeof item.quote == 'undefined' || item.quote == 'both' || item.quote == 'value' ? quoteEscape(item.value) : item.value);
+            var name = item.name;
+            var value = item.value;
 
             var doReplace = function(){
                 fileContents = fileContents.replace(new RegExp("\n\"?"+escapedName+"\"?.*"), "\n"+name+" = "+value);
@@ -430,7 +430,7 @@ var applyCustomConfig = (function(){
             // If item's target build type matches the xcconfig build type
             if(itemBuildType === fileBuildType){
                 // If file contains the item, replace it with configured value
-                if(fileContents.match(escapedName)){
+                if(fileContents.match(escapedName) && item.xcconfigEnforce != "false"){
                     doReplace();
                 }else // presence of item is being enforced, so add it to the relevant .xcconfig
                 if(item.xcconfigEnforce == "true"){
