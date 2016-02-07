@@ -147,6 +147,8 @@ var applyCustomConfig = (function(){
                     prefData["quote"] = preference.attrib.quote;
                 }
 
+                prefData["xcconfigEnforce"] = preference.attrib.xcconfigEnforce ? preference.attrib.xcconfigEnforce : null;
+
                 if(!configData[target]) {
                     configData[target] = [];
                 }
@@ -406,16 +408,42 @@ var applyCustomConfig = (function(){
 
         _.each(configItems, function (item) {
             var escapedName = regExpEscape(item.name);
-            // Check if file contains item and replace if so (respecting buildType)
-            if(fileContents.match(escapedName) && (!item.buildType
-                || (item.buildType.toLowerCase() == "debug" && !targetFileName.match("release"))
-                || (item.buildType.toLowerCase() == "release" && !targetFileName.match("debug"))  )){
-                var name = (typeof item.quote == 'undefined' || item.quote == 'both' || item.quote == 'name' ? quoteEscape(item.name) : item.name);
-                var value = (typeof item.quote == 'undefined' || item.quote == 'both' || item.quote == 'value' ? quoteEscape(item.value) : item.value);
+
+            var fileBuildType = "none";
+            if(targetFileName.match("release")){
+                fileBuildType = "release";
+            }else if(targetFileName.match("debug")){
+                fileBuildType = "debug";
+            }
+
+            var itemBuildType = item.buildType ? item.buildType.toLowerCase() : "none";
+
+            var name = (typeof item.quote == 'undefined' || item.quote == 'both' || item.quote == 'name' ? quoteEscape(item.name) : item.name);
+            var value = (typeof item.quote == 'undefined' || item.quote == 'both' || item.quote == 'value' ? quoteEscape(item.value) : item.value);
+
+            var doReplace = function(){
                 fileContents = fileContents.replace(new RegExp("\n\"?"+escapedName+"\"?.*"), "\n"+name+" = "+value);
                 logger.debug("Overwrote "+item.name+" with '"+item.value+"' in "+targetFileName);
                 modified = true;
+            };
+
+            // If item's target build type matches the xcconfig build type
+            if(itemBuildType === fileBuildType){
+                // If file contains the item, replace it with configured value
+                if(fileContents.match(escapedName)){
+                    doReplace();
+                }else // presence of item is being enforced, so add it to the relevant .xcconfig
+                if(item.xcconfigEnforce == "true"){
+                    fileContents += "\n"+name+" = "+value;
+                    modified = true;
+                }
+            }else
+            // if item is a Debug CODE_SIGNING_IDENTITY, this is a special case: Cordova places its default Debug CODE_SIGNING_IDENTITY in build.xcconfig (not build-debug.xcconfig)
+            // so if buildType="debug", want to overrwrite in build.xcconfig
+            if(item.name.match("CODE_SIGN_IDENTITY") && itemBuildType == "debug" && fileBuildType == "none" && item.xcconfigEnforce != "true"){
+                doReplace();
             }
+
         });
 
         if(modified){
