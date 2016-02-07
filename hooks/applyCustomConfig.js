@@ -375,15 +375,25 @@ var applyCustomConfig = (function(){
             var block = buildConfig[blockName];
 
             if(typeof(block) !== "object" || !(block["buildSettings"])) continue;
-            var literalMatch = !!block["buildSettings"][item.name];
-            var quotedMatch = !!block["buildSettings"][quoteEscape(item.name)];
+            var literalMatch = !!block["buildSettings"][item.name],
+                quotedMatch = !!block["buildSettings"][quoteEscape(item.name)],
+                match = literalMatch || quotedMatch;
 
-            if((literalMatch || quotedMatch || mode === "add") &&
+            if((match || mode === "add") &&
                 (!item.buildType || item.buildType.toLowerCase() === block['name'].toLowerCase())){
-                var name = literalMatch ? item.name : quoteEscape(item.name);
+
+                var name;
+                if(match){
+                    name = literalMatch ? item.name : quoteEscape(item.name);
+                }else{
+                    // adding
+                    name = (item.quote && (item.quote == "none" || item.quote == "value")) ? item.name : quoteEscape(item.name);
+                }
+                var value = (item.quote && (item.quote == "none" || item.quote == "key")) ? item.value : quoteEscape(item.value);
+
                 block["buildSettings"][name] = quoteEscape(item.value);
                 modified = true;
-                logger.debug(mode+" XCBuildConfiguration key='"+item.name+"' to value='"+item.value+"' for build type='"+block['name']+"' in block='"+blockName+"'");
+                logger.debug(mode+" XCBuildConfiguration key={ "+name+" } to value={ "+value+" } for build type='"+block['name']+"' in block='"+blockName+"'");
             }
         }
         return modified;
@@ -440,7 +450,7 @@ var applyCustomConfig = (function(){
             }else
             // if item is a Debug CODE_SIGNING_IDENTITY, this is a special case: Cordova places its default Debug CODE_SIGNING_IDENTITY in build.xcconfig (not build-debug.xcconfig)
             // so if buildType="debug", want to overrwrite in build.xcconfig
-            if(item.name.match("CODE_SIGN_IDENTITY") && itemBuildType == "debug" && fileBuildType == "none" && item.xcconfigEnforce != "true"){
+            if(item.name.match("CODE_SIGN_IDENTITY") && itemBuildType == "debug" && fileBuildType == "none" && !item.xcconfigEnforce){
                 doReplace();
             }
 
