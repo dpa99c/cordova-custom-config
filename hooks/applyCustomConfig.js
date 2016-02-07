@@ -512,7 +512,6 @@ var applyCustomConfig = (function(){
 
         _.each(configData, function (configItems, targetFileName) {
             var targetFilePath;
-
             if (platform === 'ios') {
                 if (targetFileName.indexOf("Info.plist") > -1) {
                     targetFileName =  projectName + '-Info.plist';
@@ -567,15 +566,12 @@ var applyCustomConfig = (function(){
             platform = platform.trim().toLowerCase();
             try{
                 updatePlatformConfig(platform);
-                logger.info("Custom config applied to '"+platform+"' platform");
             }catch(e){
                 logger.error("Error updating config for platform '"+platform+"': "+ e.message);
                 if(settings.stoponerror) throw e;
             }
         });
     };
-
-
     return applyCustomConfig;
 })();
 
