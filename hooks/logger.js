@@ -25,7 +25,7 @@ var logger = (function(){
             context = ctx;
         },
         debug: function(msg){
-            if(context.opts.verbose){
+            if(context.opts.verbose || context.cmdLine.match("--verbose")){
                 msg = prefixMsg(msg);
                 if(hasColors){
                     console.log(msg.green);

@@ -99,10 +99,5 @@ module.exports = function(ctx) {
     hooksPath = path.resolve(ctx.opts.projectRoot, "plugins", ctx.opts.plugin.id, "hooks");
     logger = require(path.resolve(hooksPath, "logger.js"))(ctx);
     logger.debug("Running restoreBackups.js");
-
-    if(ctx.hook === "before_plugin_uninstall"){
-        restoreBackups.init(ctx); // no time to check for deps or files will get removed by plugin rm before backups can be restored
-    }else{
-        require(path.resolve(hooksPath, "resolveDependencies.js"))(ctx, restoreBackups.init.bind(this, ctx));
-    }
+    require(path.resolve(hooksPath, "resolveDependencies.js"))(ctx).then(restoreBackups.init.bind(this, ctx));
 };

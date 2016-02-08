@@ -580,5 +580,5 @@ module.exports = function(ctx) {
     hooksPath = path.resolve(ctx.opts.projectRoot, "plugins", ctx.opts.plugin.id, "hooks");
     logger = require(path.resolve(hooksPath, "logger.js"))(ctx);
     logger.debug("Running applyCustomConfig.js");
-    require(path.resolve(hooksPath, "resolveDependencies.js"))(ctx, applyCustomConfig.init.bind(this, ctx));
+    require(path.resolve(hooksPath, "resolveDependencies.js"))(ctx).then(applyCustomConfig.init.bind(this, ctx));
 };
