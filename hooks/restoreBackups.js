@@ -3,13 +3,18 @@
 /**********
  * Globals
  **********/
-var path = require('path'),
-    cwd = path.resolve(),
-    logger,
-    hooksPath,
+
+// Pre-existing Cordova npm modules
+var deferral, path, cwd;
+
+// Npm dependencies
+var logger,
     fs,
     _,
     fileUtils;
+
+// Other globals
+var hooksPath;
 
 var restoreBackups = (function(){
 
@@ -57,6 +62,12 @@ var restoreBackups = (function(){
         return fileName.replace(/{(projectName)}/g, projectName);
     }
 
+    // Script operations are complete, so resolve deferred promises
+    function complete(){
+        logger.debug("Finished restoring backups");
+        deferral.resolve();
+    }
+
     /*************
      * Public API
      *************/
@@ -81,13 +92,19 @@ var restoreBackups = (function(){
         var platforms = _.filter(fs.readdirSync('platforms'), function (file) {
             return fs.statSync(path.resolve('platforms', file)).isDirectory();
         });
-        _.each(platforms, function (platform) {
+        _.each(platforms, function (platform, index) {
             platform = platform.trim().toLowerCase();
             try{
                 restorePlatformBackups(platform);
+                if(index == platforms.length - 1){
+                    complete();
+                }
             }catch(e){
-                logger.error("Error restoring backups for platform '"+platform+"': "+ e.message);
-                if(settings.stoponerror) throw e;
+                var msg = "Error restoring backups for platform '"+platform+"': "+ e.message;
+                logger.error(msg);
+                if(settings.stoponerror){
+                    deferral.reject(msg);
+                }
             }
         });
     };
@@ -96,8 +113,14 @@ var restoreBackups = (function(){
 })();
 
 module.exports = function(ctx) {
+    deferral = ctx.requireCordovaModule('q').defer();
+    path = ctx.requireCordovaModule('path');
+    cwd = path.resolve();
+
     hooksPath = path.resolve(ctx.opts.projectRoot, "plugins", ctx.opts.plugin.id, "hooks");
     logger = require(path.resolve(hooksPath, "logger.js"))(ctx);
     logger.debug("Running restoreBackups.js");
     require(path.resolve(hooksPath, "resolveDependencies.js"))(ctx).then(restoreBackups.init.bind(this, ctx));
+
+    return deferral.promise;
 };

@@ -3,16 +3,20 @@
 /**********
  * Globals
  **********/
-var path = require('path'),
-    cwd = path.resolve(),
-    logger,
-    hooksPath,
+// Pre-existing Cordova npm modules
+var deferral, path, cwd;
+
+// Npm dependencies
+var logger,
     fs,
     _ ,
     et,
     plist,
     xcode,
     tostr;
+
+// Other globals
+var hooksPath;
 
 var applyCustomConfig = (function(){
 
@@ -537,6 +541,12 @@ var applyCustomConfig = (function(){
         });
     }
 
+    // Script operations are complete, so resolve deferred promises
+    function complete(){
+        logger.debug("Finished applying platform config");
+        deferral.resolve();
+    }
+
     /*************
      * Public API
      *************/
@@ -562,13 +572,19 @@ var applyCustomConfig = (function(){
         var platforms = _.filter(fs.readdirSync('platforms'), function (file) {
             return fs.statSync(path.resolve('platforms', file)).isDirectory();
         });
-        _.each(platforms, function (platform) {
+        _.each(platforms, function (platform, index) {
             platform = platform.trim().toLowerCase();
             try{
                 updatePlatformConfig(platform);
+                if(index == platforms.length - 1){
+                    complete();
+                }
             }catch(e){
-                logger.error("Error updating config for platform '"+platform+"': "+ e.message);
-                if(settings.stoponerror) throw e;
+                var msg = "Error updating config for platform '"+platform+"': "+ e.message;
+                logger.error(msg);
+                if(settings.stoponerror){
+                    deferral.reject(msg);
+                }
             }
         });
     };
@@ -577,8 +593,13 @@ var applyCustomConfig = (function(){
 
 // Main
 module.exports = function(ctx) {
+    deferral = ctx.requireCordovaModule('q').defer();
+    path = ctx.requireCordovaModule('path');
+    cwd = path.resolve();
+
     hooksPath = path.resolve(ctx.opts.projectRoot, "plugins", ctx.opts.plugin.id, "hooks");
     logger = require(path.resolve(hooksPath, "logger.js"))(ctx);
     logger.debug("Running applyCustomConfig.js");
     require(path.resolve(hooksPath, "resolveDependencies.js"))(ctx).then(applyCustomConfig.init.bind(this, ctx));
+    return deferral.promise;
 };
