@@ -64,7 +64,6 @@ var restoreBackups = (function(){
 
     // Script operations are complete, so resolve deferred promises
     function complete(){
-        logger.debug("Finished restoring backups");
         deferral.resolve();
     }
 
@@ -85,6 +84,7 @@ var restoreBackups = (function(){
         settings = fileUtils.getSettings();
         if(typeof(settings.autorestore) !== "undefined" && settings.autorestore == "false"){
             logger.log("Skipping auto-restore of config file backup(s) due to config.xml preference");
+            complete();
             return;
         }
 
@@ -97,6 +97,7 @@ var restoreBackups = (function(){
             try{
                 restorePlatformBackups(platform);
                 if(index == platforms.length - 1){
+                    logger.debug("Finished restoring backups");
                     complete();
                 }
             }catch(e){
