@@ -30,6 +30,9 @@ var applyCustomConfig = (function(){
         "MainActivity" // Cordova >= 4.3.0
     ];
 
+    // Tags that can appear multiple times in the <root> manifest, so must be distinguished by name
+    var androidRootMultiples = ["uses-permission", "permission", "permission-tree", "permission-group", "instrumentation", "uses-sdk", "uses-configuration", "uses-feature", "supports-screens", "compatible-screens", "supports-gl-texture"];
+
     var xcconfigs = ["build.xcconfig", "build-extras.xcconfig", "build-debug.xcconfig", "build-release.xcconfig"];
 
     /*  Global object that defines the available custom preferences for each platform.
@@ -257,8 +260,8 @@ var applyCustomConfig = (function(){
                 parentEl.attrib[childSelector.replace("@",'')] = data.attrib['value'];
 
             } else {
-                // since there can be multiple uses-permission elements, we need to select them by unique name
-                if(childSelector === 'uses-permission') {
+                //  if there can be multiple sibling elements, we need to select them by unique name
+                if(androidRootMultiples.indexOf(childSelector > -1)){
                     childSelector += '[@android:name=\'' + data.attrib['android:name'] + '\']';
                 }
 
