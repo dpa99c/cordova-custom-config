@@ -40,7 +40,7 @@ var restoreBackups = (function(){
     /*********************
      * Internal functions
      *********************/
-    
+
     function restorePlatformBackups(platform){
         var configFiles = PLATFORM_CONFIG_FILES[platform],
             backupFile, backupFileName, backupFilePath, backupFileExists, targetFilePath;
@@ -70,13 +70,16 @@ var restoreBackups = (function(){
     /*************
      * Public API
      *************/
+    restoreBackups.loadDependencies = function(ctx){
+        fs = require('fs-extra'),
+        _ = require('lodash'),
+        fileUtils = require(path.resolve(hooksPath, "fileUtils.js"))(ctx);
+        logger.debug("Loaded module dependencies");
+        restoreBackups.init(ctx);
+    };
+
     restoreBackups.init = function(ctx){
         context = ctx;
-
-        // Load modules
-        fs = require('fs-extra'),
-            _ = require('lodash'),
-            fileUtils = require(path.resolve(hooksPath, "fileUtils.js"))(context);
 
         projectName = fileUtils.getProjectName();
         logFn = context.hook === "before_plugin_uninstall" ? logger.log : logger.debug;
@@ -121,7 +124,12 @@ module.exports = function(ctx) {
     hooksPath = path.resolve(ctx.opts.projectRoot, "plugins", ctx.opts.plugin.id, "hooks");
     logger = require(path.resolve(hooksPath, "logger.js"))(ctx);
     logger.debug("Running restoreBackups.js");
-    require(path.resolve(hooksPath, "resolveDependencies.js"))(ctx).then(restoreBackups.init.bind(this, ctx));
+    try{
+        restoreBackups.loadDependencies(ctx);
+    }catch(e){
+        logger.warn("Error loading dependencies ("+e.message+") - attempting to resolve");
+        require(path.resolve(hooksPath, "resolveDependencies.js"))(ctx).then(restoreBackups.loadDependencies.bind(this, ctx));
+    }
 
     return deferral.promise;
 };

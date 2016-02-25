@@ -553,18 +553,21 @@ var applyCustomConfig = (function(){
      * Public API
      *************/
 
-    applyCustomConfig.init = function(ctx){
-        context = ctx;
-        rootdir = context.opts.projectRoot;
-
-        // Load modules
+    applyCustomConfig.loadDependencies = function(ctx){
         fs = require('fs-extra'),
             _ = require('lodash'),
             et = require('elementtree'),
             plist = require('plist'),
             xcode = require('xcode'),
             tostr = require('tostr'),
-            fileUtils = require(path.resolve(hooksPath, "fileUtils.js"))(context);
+            fileUtils = require(path.resolve(hooksPath, "fileUtils.js"))(ctx);
+        logger.debug("Loaded module dependencies");
+        applyCustomConfig.init(ctx);
+    };
+
+    applyCustomConfig.init = function(ctx){
+        context = ctx;
+        rootdir = context.opts.projectRoot;
 
         configXml = fileUtils.getConfigXml();
         projectName = fileUtils.getProjectName();
@@ -602,6 +605,12 @@ module.exports = function(ctx) {
     hooksPath = path.resolve(ctx.opts.projectRoot, "plugins", ctx.opts.plugin.id, "hooks");
     logger = require(path.resolve(hooksPath, "logger.js"))(ctx);
     logger.debug("Running applyCustomConfig.js");
-    require(path.resolve(hooksPath, "resolveDependencies.js"))(ctx).then(applyCustomConfig.init.bind(this, ctx));
+    try{
+        applyCustomConfig.loadDependencies(ctx);
+    }catch(e){
+        logger.warn("Error loading dependencies ("+e.message+") - attempting to resolve");
+        require(path.resolve(hooksPath, "resolveDependencies.js"))(ctx).then(applyCustomConfig.loadDependencies.bind(this, ctx));
+    }
+
     return deferral.promise;
 };
