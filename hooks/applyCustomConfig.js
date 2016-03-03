@@ -423,43 +423,44 @@ var applyCustomConfig = (function(){
         var fileContents = fs.readFileSync(targetFilePath, 'utf-8');
 
         _.each(configItems, function (item) {
-            var escapedName = regExpEscape(item.name);
-
-            var fileBuildType = "none";
-            if(targetFileName.match("release")){
-                fileBuildType = "release";
-            }else if(targetFileName.match("debug")){
-                fileBuildType = "debug";
-            }
-
-            var itemBuildType = item.buildType ? item.buildType.toLowerCase() : "none";
-
-            var name = item.name;
-            var value = item.value;
-
-            var doReplace = function(){
-                fileContents = fileContents.replace(new RegExp("\n\"?"+escapedName+"\"?.*"), "\n"+name+" = "+value);
-                logger.debug("Overwrote "+item.name+" with '"+item.value+"' in "+targetFileName);
-                modified = true;
-            };
-
-            // If item's target build type matches the xcconfig build type
-            if(itemBuildType === fileBuildType){
-                // If file contains the item, replace it with configured value
-                if(fileContents.match(escapedName) && item.xcconfigEnforce != "false"){
-                    doReplace();
-                }else // presence of item is being enforced, so add it to the relevant .xcconfig
-                if(item.xcconfigEnforce == "true"){
-                    fileContents += "\n"+name+" = "+value;
-                    modified = true;
+            // some keys have name===undefined; ignore these.
+            if (item.name) {
+                var escapedName = regExpEscape(item.name);
+                var fileBuildType = "none";
+                if(targetFileName.match("release")){
+                    fileBuildType = "release";
+                }else if(targetFileName.match("debug")){
+                    fileBuildType = "debug";
                 }
-            }else
-            // if item is a Debug CODE_SIGNING_IDENTITY, this is a special case: Cordova places its default Debug CODE_SIGNING_IDENTITY in build.xcconfig (not build-debug.xcconfig)
-            // so if buildType="debug", want to overrwrite in build.xcconfig
-            if(item.name.match("CODE_SIGN_IDENTITY") && itemBuildType == "debug" && fileBuildType == "none" && !item.xcconfigEnforce){
-                doReplace();
-            }
 
+                var itemBuildType = item.buildType ? item.buildType.toLowerCase() : "none";
+
+                var name = item.name;
+                var value = item.value;
+
+                var doReplace = function(){
+                    fileContents = fileContents.replace(new RegExp("\n\"?"+escapedName+"\"?.*"), "\n"+name+" = "+value);
+                    logger.debug("Overwrote "+item.name+" with '"+item.value+"' in "+targetFileName);
+                    modified = true;
+                };
+
+                // If item's target build type matches the xcconfig build type
+                if(itemBuildType === fileBuildType){
+                    // If file contains the item, replace it with configured value
+                    if(fileContents.match(escapedName) && item.xcconfigEnforce != "false"){
+                        doReplace();
+                    }else // presence of item is being enforced, so add it to the relevant .xcconfig
+                    if(item.xcconfigEnforce == "true"){
+                        fileContents += "\n"+name+" = "+value;
+                        modified = true;
+                    }
+                }else
+                // if item is a Debug CODE_SIGNING_IDENTITY, this is a special case: Cordova places its default Debug CODE_SIGNING_IDENTITY in build.xcconfig (not build-debug.xcconfig)
+                // so if buildType="debug", want to overrwrite in build.xcconfig
+                if(item.name.match("CODE_SIGN_IDENTITY") && itemBuildType == "debug" && fileBuildType == "none" && !item.xcconfigEnforce){
+                    doReplace();
+                }              
+            }
         });
 
         if(modified){
