@@ -397,7 +397,7 @@ var applyCustomConfig = (function(){
                 }
                 var value = (item.quote && (item.quote == "none" || item.quote == "key")) ? item.value : quoteEscape(item.value);
 
-                block["buildSettings"][name] = quoteEscape(item.value);
+                block["buildSettings"][name] = value;
                 modified = true;
                 logger.debug(mode+" XCBuildConfiguration key={ "+name+" } to value={ "+value+" } for build type='"+block['name']+"' in block='"+blockName+"'");
             }
