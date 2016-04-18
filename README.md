@@ -1,27 +1,36 @@
 cordova-custom-config plugin
 ============================
 
-* [Overview](#overview)
-    * [Why should I use it?](#why-should-i-use-it)
-* [Installation](#installation)
-* [Usage](#usage)
-    * [Backups](#backups)
-    * [Preferences](#preferences)
-    * [Config blocks](#config-blocks)
-    * [Android](#android)
-        * [Android preferences](#android-preferences)
-        * [Android config blocks](#android-config-blocks)
-        * [Android example](#android-example)
-    * [iOS](#ios)
-        * [iOS preferences](#ios-preferences)
-        * [iOS config blocks](#ios-config-blocks)
-        * [iOS example](#ios-example)
-    * [Plugin preferences](#plugin-preferences)
-    * [Log output](#log-output)
-* [Example project](#example-project)
-* [TODO](#todo)
-* [Credits](#credits)
-* [License](#license)
+<!-- START table-of-contents -->
+**Table of Contents**
+
+- [Overview](#overview)
+  - [Why should I use it?](#why-should-i-use-it)
+- [Installation](#installation)
+  - [Using the Cordova/Phonegap CLI](#using-the-cordovaphonegap-cli)
+  - [Using Cordova Plugman](#using-cordova-plugman)
+  - [PhoneGap Build](#phonegap-build)
+- [Usage](#usage)
+  - [Removable preferences via backup/restore](#removable-preferences-via-backuprestore)
+  - [Preferences](#preferences)
+  - [Config blocks](#config-blocks)
+  - [Android](#android)
+    - [Android preferences](#android-preferences)
+    - [Android config blocks](#android-config-blocks)
+    - [Android example](#android-example)
+  - [iOS](#ios)
+    - [iOS preferences](#ios-preferences)
+    - [iOS config blocks](#ios-config-blocks)
+    - [iOS example](#ios-example)
+  - [Plugin preferences](#plugin-preferences)
+  - [Log output](#log-output)
+- [Example project](#example-project)
+- [TODO](#todo)
+- [Version notes](#version-notes)
+- [Credits](#credits)
+- [License](#license)
+
+<!-- END table-of-contents -->
 
 # Overview
 
@@ -39,9 +48,6 @@ allowing either preferences set by Cordova to be overridden or other unspecified
 Since the custom preferences are entered into the config.xml, they can be committed to version control and therefore applied across multiple development machines, CI environments,
 and maintained between builds or even if a platform is removed and re-added.
 
-As of version 1.1.0, changes made by the plugin are reversible, so removing a custom element from the config.xml will remove it from the platform configuration file on the next `prepare` operation,
-and uninstalling the plugin will restore the original configuration files.
-
 The plugin is registered on [npm](https://www.npmjs.com/package/cordova-custom-config) (requires Cordova CLI 5.0.0+) as `cordova-custom-config`
 
 # Installation
@@ -49,12 +55,12 @@ The plugin is registered on [npm](https://www.npmjs.com/package/cordova-custom-c
 Upon installing this plugin, an `after_plugin_add` hook script will run to satisfy npm dependencies defined in the package.json.
 Any modules that need to be installed will be placed in a `node_modules` folder inside the project folder.
 
-## Using the Cordova/Phonegap [CLI](http://docs.phonegap.com/en/edge/guide_cli_index.md.html)
+## Using the Cordova/Phonegap CLI
 
     $ cordova plugin add cordova-custom-config
     $ phonegap plugin add cordova-custom-config
 
-## Using [Cordova Plugman](https://github.com/apache/cordova-plugman)
+## Using Cordova Plugman
 
     $ plugman install --plugin=cordova-custom-config --platform=<platform> --project=<project_path> --plugins_dir=plugins
 
@@ -65,7 +71,7 @@ For example, to install for the Android platform
 ## PhoneGap Build
 Add the following xml to your config.xml to use the latest version from [npm](https://www.npmjs.com/package/cordova-custom-config):
 
-    <gap:plugin name="cordova-custom-config" source="npm" />
+    <plugin name="cordova-custom-config" source="npm" />
 
 # Usage
 
@@ -74,17 +80,24 @@ As such, all you need to do to "use" this plugin is include the relevant keys in
 
 NOTE: There are no run-time source files included in this plugin - it is simply a convenient package of hook scripts.
 
-## Backups
+## Removable preferences via backup/restore
 
-When the first `prepare` operation runs after the plugin is installed, it will make backup copies of the original configuration files before it makes any modifications. These backup copies are stored in `plugins/cordova-custom-config/backup/` and by default are restored before each `prepare` operation, allowing Cordova to make modifications and then the plugin to make further modifications after the `prepare`.
+By default, any changes made by this plugin to platform config files are irreversible - i.e. if you want to undo changes made by the plugin, you'll need to remove then re-add the Cordova platform, for example:
 
-This means changes made by the plugin are reversible, so removing a custom element from the config.xml will remove it from the platform configuration file on the next `prepare` operation and uninstalling the plugin will restore the configuration files to their original state (before the plugin made any modifications).
+    cordova platform rm android && cordova platform add android
+
+However, if you want the changes made to be reversible, you can enable auto-backup/restore functionality by adding the following preference inside the top-level `<widget>` element of your `config.xml`:
+                                                                                                                 
+    <preference name="cordova-custom-config-autorestore" value="true" />
+
+When the first `prepare` operation runs after the plugin is installed, it will make backup copies of the original configuration files before it makes any modifications. 
+These backup copies are stored in `plugins/cordova-custom-config/backup/` and will be restored before each `prepare` operation, allowing Cordova to make modifications and then the plugin to make further modifications after the `prepare`.
+
+This means changes made by the plugin are reversible, so removing a custom element from the `config.xml` will remove it from the platform configuration file on the next `prepare` operation and uninstalling the plugin will restore the configuration files to their original state (before the plugin made any modifications).
 
 Consequently, any manual changes made to the platform configuration files in `platforms/` **after** installing the plugin will be overwritten by the plugin on the next `prepare` operation.
 
-To prevent auto-restoring of backups and make manual changes to platform configuration files persist, add the following preference inside the top-level `<widget>` element:
-
-    <preference name="cordova-custom-config-autorestore" value="false" />
+To prevent auto-restoring of backups and make manual changes to platform configuration files persist, remove the `autorestore` preference from the `config.xml`
 
 ## Preferences
 
@@ -137,7 +150,7 @@ so your `<widget>` element should look something like:
 
 #### XPath preferences
 
-As of `cordova-custom-config@1.1.8`, Android manifest preferences are set by using XPaths in the preference name to define which element attribute the value should be applied to.
+Android manifest preferences are set by using XPaths in the preference name to define which element attribute the value should be applied to.
 
 The preference name should be prefixed with `android-manifest` then follow with an XPath which specifies the element and attribute to apple the value to.
 
@@ -157,22 +170,6 @@ If the attribute you are setting is on the root `<manifest>` element, just omit 
 
     <preference name="android-manifest/@android:installLocation" value="auto" />
 
-#### Pre-defined preferences
-
-Prior to `cordova-custom-config@1.1.8`, Android preferences were constrained to those explicitly defined by the plugin.
-While these are still supported for backward compatibility, their use has been deprecated and will result in a warning message in the console output.
-
-**NOTE**: Support pre-defined preferences will be removed in `cordova-custom-config@2`
-
-Supported pre-defined preferences are:
-
-* `android-manifest-hardwareAccelerated` => `//manifest@android:hardwareAccelerated`
-* `android-activity-hardwareAccelerated` => `//manifest/application@android:hardwareAccelerated`
-* `android-installLocation` => `//manifest@android:installLocation`
-* `android-configChanges` => `//manifest/application/activity@android:installLocation`
-* `android-launchMode` => `//manifest/application/activity@android:launchMode`
-* `android-theme` => `//manifest/application/activity@android:theme`
-* `android-windowSoftInputMode` => `//manifest/application/activity@android:windowSoftInputMode`
 
 ### Android config blocks
 
@@ -403,10 +400,10 @@ The plugin supports some preferences which are used to customise the behaviour o
 The following preferences are currently supported:
 
 - `cordova-custom-config-autorestore` - if true, the plugin will restore a backup of platform configuration files taken at plugin installation time.
-See [Backups](#backups) section for details. Defaults to true.
+See the [Removable preferences](#removable-preferences-via-backuprestore) section for details. Defaults to `false`.
 - `cordova-custom-config-stoponerror` - if true and an error occurs while updating config for a given platform during a `prepare` operation, the error will cause the `prepare` operation to fail.
 If false, the plugin will log the error but will proceed and attempt to update any other platforms, before allowing the `prepare` operation to continue.
- Defaults to false.
+ Defaults to `false`.
 
 ## Log output
 
@@ -421,6 +418,18 @@ An example project illustrating use of this plugin can be found here: [https://g
 # TODO
 
 See the [TODO list](https://github.com/dpa99c/cordova-custom-config/wiki/TODO) for planned features/improvements.
+
+# Version notes
+
+**`cordova-custom-config@2.0.0`**
+
+- changes made by the plugin are non-reversible by default, so removing a custom element from the config.xml will **not** remove it from the platform configuration file.
+To make plugin changes reversible, see [Removable preferences via backup/restore](#removable-preferences-via-backuprestore).
+- Support for pre-defined preferences used prior to `cordova-custom-config@1.1.8` has been removed.
+
+**`cordova-custom-config@1.1.8`**
+
+- Android manifest preferences are set by using XPaths in the preference name to define which element attribute the value should be applied to.
 
 
 # Credits

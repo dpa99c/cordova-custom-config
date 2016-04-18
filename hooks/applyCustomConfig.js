@@ -35,21 +35,6 @@ var applyCustomConfig = (function(){
 
     var xcconfigs = ["build.xcconfig", "build-extras.xcconfig", "build-debug.xcconfig", "build-release.xcconfig"];
 
-    /*  Global object that defines the available custom preferences for each platform.
-     Maps a config.xml preference to a specific target file, parent element, and destination attribute or element
-     */
-    var preferenceMappingData = {
-        'android': {
-            'android-manifest-hardwareAccelerated': {target: 'AndroidManifest.xml', parent: './', destination: 'android:hardwareAccelerated'},
-            'android-installLocation': {target: 'AndroidManifest.xml', parent: './', destination: 'android:installLocation'},
-            'android-activity-hardwareAccelerated': {target: 'AndroidManifest.xml', parent: 'application', destination: 'android:hardwareAccelerated'},
-            'android-configChanges': {target: 'AndroidManifest.xml', parent: 'application/activity[@android:name=\'{ActivityName}\']', destination: 'android:configChanges'},
-            'android-launchMode': {target: 'AndroidManifest.xml', parent: 'application/activity[@android:name=\'{ActivityName}\']', destination: 'android:launchMode'},
-            'android-theme': {target: 'AndroidManifest.xml', parent: 'application/activity[@android:name=\'{ActivityName}\']', destination: 'android:theme'},
-            'android-windowSoftInputMode': {target: 'AndroidManifest.xml', parent: 'application/activity[@android:name=\'{ActivityName}\']', destination: 'android:windowSoftInputMode'}
-        },
-        'ios': {}
-    };
     var preferencesData;
 
 
@@ -169,21 +154,10 @@ var applyCustomConfig = (function(){
 
         _.each(preferences, function (preference) {
             // Extract pre-defined preferences (deprecated)
-            var prefMappingData = preferenceMappingData[platform][preference.attrib.name],
-                target,
+            var target,
                 prefData;
 
-            if (prefMappingData) {
-                prefData = {
-                    parent: prefMappingData.parent,
-                    type: type,
-                    destination: prefMappingData.destination,
-                    data: preference
-                };
-                target = prefMappingData.target;
-                logger.warn("WARNING Pre-defined Android preference '"+preference.attrib.name+"' found.\n Pre-defined Android preferences are DEPRECATED in favour of more flexible xpath-style preferences and WILL BE REMOVED in cordova-custom-config@2");
-            }
-            else if(preference.attrib.name.match(/^android-manifest\//)){
+            if(preference.attrib.name.match(/^android-manifest\//)){
                 // Extract manifest Xpath preferences
                 var parts = preference.attrib.name.split("/"),
                     destination = parts.pop();

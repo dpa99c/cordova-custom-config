@@ -85,8 +85,8 @@ var restoreBackups = (function(){
         logFn = context.hook === "before_plugin_uninstall" ? logger.log : logger.debug;
 
         settings = fileUtils.getSettings();
-        if(typeof(settings.autorestore) !== "undefined" && settings.autorestore == "false"){
-            logger.log("Skipping auto-restore of config file backup(s) due to config.xml preference");
+        if(typeof(settings.autorestore) === "undefined" || settings.autorestore == "false"){
+            logger.log("Skipping auto-restore of config file backup(s)");
             complete();
             return;
         }
