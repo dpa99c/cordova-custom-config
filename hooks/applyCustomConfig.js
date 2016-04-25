@@ -324,7 +324,13 @@ var applyCustomConfig = (function(){
         var xcodeProject = xcode.project(xcodeProjectPath);
         xcodeProject.parse(function(err){
             if(err){
-                shell.echo('An error occurred during parsing of [' + xcodeProjectPath + ']: ' + JSON.stringify(err));
+                // shell is undefined if android platform has been removed and added with a new package id but ios stayed the same.
+                var msg = 'An error occurred during parsing of [' + xcodeProjectPath + ']: ' + JSON.stringify(err);
+                if(typeof shell != "undefined" && shell != null){
+                    shell.echo(msg);
+                } else{
+                    logger.error(msg + ' - Maybe you forgot to remove/add the ios platform?');
+                }
             }else{
                 _.each(configItems, function (item) {
                     switch(item.type){
