@@ -131,6 +131,10 @@ For a list of possible manifest values see [http://developer.android.com/guide/t
 - `<preference>` elements in `config.xml` are used to set set attributes on existing elements in the `AndroidManifest.xml`.
     - e.g. `<preference name="android-manifest/@android:hardwareAccelerated" value="false" />`
     - will result in `AndroidManifest.xml`: `<manifest android:hardwareAccelerated="false">`
+- Sometimes there plugins set some defaults in AndroidManifest.xml that you may not want.
+  It is also possible to delete nodes using the preferences and the `delete="true"` attribute.
+  - e.g. `<preference name="android-manifest/uses-permission/[@android:name='android.permission.WRITE_CONTACTS']/@android:name" delete="true" />`
+  - will delete the existing node `<uses-permission android:name="android.permission.WRITE_CONTACTS" />`
 
 #### Android namespace attribute
 

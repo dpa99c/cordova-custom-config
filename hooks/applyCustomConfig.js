@@ -235,8 +235,11 @@ var applyCustomConfig = (function(){
             }
 
             if(item.type === 'preference') {
-                parentEl.attrib[childSelector.replace("@",'')] = data.attrib['value'];
-
+                if(data.attrib['delete'] === 'true') {
+                    root.remove(parentEl);
+                } else {
+                    parentEl.attrib[childSelector.replace("@",'')] = data.attrib['value'];
+                }
             } else {
                 //  if there can be multiple sibling elements, we need to select them by unique name
                 if(androidRootMultiplesByName.indexOf(childSelector) > -1){
