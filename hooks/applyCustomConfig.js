@@ -31,8 +31,11 @@ var applyCustomConfig = (function(){
         "MainActivity" // Cordova >= 4.3.0
     ];
 
-    // Tags that can appear multiple times in the <root> manifest, so must be distinguished by name
-    var androidRootMultiples = ["uses-permission", "permission", "permission-tree", "permission-group", "instrumentation", "uses-sdk", "uses-configuration", "uses-feature", "supports-screens", "compatible-screens", "supports-gl-texture"];
+    // Tags that can appear multiple times in the <root> manifest, distinguished by name
+    var androidRootMultiplesByName = ["uses-permission", "permission", "permission-tree", "permission-group", "instrumentation", "uses-sdk", "uses-configuration", "uses-feature", "supports-screens", "compatible-screens", "supports-gl-texture"];
+    
+    // Tags that can appear multiple times in the <root> manifest, distinguished by label
+    var androidRootMultiplesByLabel = ["intent-filter"];
 
     var xcconfigs = ["build.xcconfig", "build-extras.xcconfig", "build-debug.xcconfig", "build-release.xcconfig"];
 
@@ -236,8 +239,11 @@ var applyCustomConfig = (function(){
 
             } else {
                 //  if there can be multiple sibling elements, we need to select them by unique name
-                if(androidRootMultiples.indexOf(childSelector > -1)){
+                if(androidRootMultiplesByName.indexOf(childSelector) > -1){
                     childSelector += '[@android:name=\'' + data.attrib['android:name'] + '\']';
+                }
+                else if(androidRootMultiplesByLabel.indexOf(childSelector) > -1){
+                    childSelector += '[@android:label=\'' + data.attrib['android:label'] + '\']';
                 }
 
                 childEl = parentEl.find(childSelector);
