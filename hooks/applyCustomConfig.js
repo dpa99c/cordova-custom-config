@@ -13,7 +13,8 @@ var logger,
     et,
     plist,
     xcode,
-    tostr;
+    tostr,
+    fileUtils;
 
 // Other globals
 var hooksPath;
@@ -433,7 +434,7 @@ var applyCustomConfig = (function(){
                 // so if buildType="debug", want to overrwrite in build.xcconfig
                 if(item.name.match("CODE_SIGN_IDENTITY") && itemBuildType == "debug" && fileBuildType == "none" && !item.xcconfigEnforce){
                     doReplace();
-                }              
+                }
             }
         });
 
