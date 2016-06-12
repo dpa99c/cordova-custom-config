@@ -393,7 +393,9 @@ config.xml:
 
 ## Plugin preferences
 
-The plugin supports some preferences which are used to customise the behaviour of the plugin. Each preference name is prefixed with `cordova-custom-config` to avoid name clashes, for example:
+The plugin supports some preferences which are used to customise the behaviour of the plugin.
+These preferences should be placed at the top level (inside `<widget>`) rather than inside individual `<platform>` elements.
+Each preference name is prefixed with `cordova-custom-config` to avoid name clashes, for example:
 
     <preference name="cordova-custom-config-autorestore" value="true" />
 
@@ -404,6 +406,12 @@ See the [Removable preferences](#removable-preferences-via-backuprestore) sectio
 - `cordova-custom-config-stoponerror` - if true and an error occurs while updating config for a given platform during a `prepare` operation, the error will cause the `prepare` operation to fail.
 If false, the plugin will log the error but will proceed and attempt to update any other platforms, before allowing the `prepare` operation to continue.
  Defaults to `false`.
+- `cordova-custom-config-hook` - determines which Cordova hook operation to use to run the plugin and apply custom config.
+Defaults to `after_prepare` if not specified.
+You may wish to change this to apply custom config earlier or later, for example if config applied by this plugin is clashing with other plugins.
+Possible values are: `before_prepare`, `after_prepare`, `before_compile`.
+See the [Cordova hooks documentation](https://cordova.apache.org/docs/en/latest/guide/appdev/hooks/) for more on the Cordova build process.
+
 
 ## Log output
 

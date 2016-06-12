@@ -24,6 +24,9 @@ var applyCustomConfig = (function(){
     /**********************
      * Internal properties
      *********************/
+
+    var defaultHook = "after_prepare";
+
     var applyCustomConfig = {}, rootdir, context, configXml, projectName, settings = {}, updatedFiles = {};
 
     var androidActivityNames = [
@@ -560,6 +563,12 @@ var applyCustomConfig = (function(){
         configXml = fileUtils.getConfigXml();
         projectName = fileUtils.getProjectName();
         settings = fileUtils.getSettings();
+        var runHook = settings.hook ? settings.hook : defaultHook;
+
+        if(context.hook != runHook){
+            logger.debug("Aborting applyCustomConfig.js because current hook '"+context.hook+"' is not configured hook '"+runHook+"'");
+            return complete();
+        }
 
         // go through each of the platform directories that have been prepared
         var platforms = _.filter(fs.readdirSync('platforms'), function (file) {
