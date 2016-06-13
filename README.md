@@ -217,7 +217,7 @@ config.xml:
         <preference name="android-manifest/application/@android:hardwareAccelerated" value="false" />
         <preference name="android-manifest/@android:hardwareAccelerated" value="false" />
         <preference name="android-manifest/application/activity/@android:configChanges" value="orientation" />
-        <preference name="android-manifest/application/activity/@android:theme" value="@android:style/Theme.Red.NoTitleBar" />
+        <preference name="android-manifest/application/activity/@android:theme" value="@android:style/Theme.Material" />
 
         <!-- specify activity name -->
         <preference name="android-manifest/application/activity[@android:name='MainActivity']/@android:launchMode" value="singleTask" />
