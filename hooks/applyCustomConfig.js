@@ -561,11 +561,8 @@ var applyCustomConfig = (function(){
         projectName = fileUtils.getProjectName();
         settings = fileUtils.getSettings();
 
-        // go through each of the platform directories that have been prepared
-        var platforms = _.filter(fs.readdirSync('platforms'), function (file) {
-            return fs.statSync(path.resolve('platforms', file)).isDirectory();
-        });
-        _.each(platforms, function (platform, index) {
+        // go through each of the context platforms
+        _.each(context.opts.platforms, function (platform, index) {
             platform = platform.trim().toLowerCase();
             try{
                 updatePlatformConfig(platform);
