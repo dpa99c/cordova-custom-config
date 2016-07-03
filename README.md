@@ -6,10 +6,10 @@ cordova-custom-config plugin
 
 - [Overview](#overview)
   - [Why should I use it?](#why-should-i-use-it)
+  - [Important note for PhoneGap Build / Intel XDK](#important-note-for-phonegap-build--intel-xdk)
 - [Installation](#installation)
   - [Using the Cordova/Phonegap CLI](#using-the-cordovaphonegap-cli)
   - [Using Cordova Plugman](#using-cordova-plugman)
-  - [PhoneGap Build](#phonegap-build)
 - [Usage](#usage)
   - [Removable preferences via backup/restore](#removable-preferences-via-backuprestore)
   - [Preferences](#preferences)
@@ -50,6 +50,15 @@ and maintained between builds or even if a platform is removed and re-added.
 
 The plugin is registered on [npm](https://www.npmjs.com/package/cordova-custom-config) (requires Cordova CLI 5.0.0+) as `cordova-custom-config`
 
+
+## Important note for PhoneGap Build / Intel XDK
+
+This plugin **WILL NOT WORK** with [Phonegap Build](https://build.phonegap.com/) because it relies on using [hook scripts](https://cordova.apache.org/docs/en/latest/guide/appdev/hooks/) which are [not supported by Phonegap Build](https://github.com/phonegap/build/issues/425).
+
+The same goes for [Intel XDK](https://software.intel.com/en-us/intel-xdk) which also [does not support hook scripts](https://software.intel.com/en-us/xdk/docs/add-manage-project-plugins).
+
+If you are using another cloud-based Cordova/Phonegap build service and find this plugin doesn't work, the reason is probably also the same.
+
 # Installation
 
 Upon installing this plugin, an `after_plugin_add` hook script will run to satisfy npm dependencies defined in the package.json.
@@ -67,11 +76,6 @@ Any modules that need to be installed will be placed in a `node_modules` folder 
 For example, to install for the Android platform
 
     $ plugman install --plugin=cordova-custom-config --platform=android --project=platforms/android --plugins_dir=plugins
-
-## PhoneGap Build
-Add the following xml to your config.xml to use the latest version from [npm](https://www.npmjs.com/package/cordova-custom-config):
-
-    <plugin name="cordova-custom-config" source="npm" />
 
 # Usage
 
