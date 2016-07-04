@@ -569,7 +569,7 @@ var applyCustomConfig = (function(){
             platform = platform.trim().toLowerCase();
             try{
                 updatePlatformConfig(platform);
-                if(index == platforms.length - 1){
+                if(index == context.opts.platforms.length - 1){
                     complete();
                 }
             }catch(e){
