@@ -31,11 +31,91 @@ var applyCustomConfig = (function(){
         "MainActivity" // Cordova >= 4.3.0
     ];
 
-    // Tags that can appear multiple times in the <root> manifest, distinguished by name
-    var androidRootMultiplesByName = ["uses-permission", "permission", "permission-tree", "permission-group", "instrumentation", "uses-sdk", "uses-configuration", "uses-feature", "supports-screens", "compatible-screens", "supports-gl-texture"];
-    
-    // Tags that can appear multiple times in the <root> manifest, distinguished by label
-    var androidRootMultiplesByLabel = ["intent-filter"];
+    // Tags that can appear multiple times
+    // Specified by parent and distinguished by name or label
+
+    var androidMultiples = [
+        {
+            tag: "uses-permission",
+            parent: "./",
+            uniqueBy: "name"
+        },
+        {
+            tag: "permission",
+            parent: "./",
+            uniqueBy: "name"
+        },
+        {
+            tag: "permission-tree",
+            parent: "./",
+            uniqueBy: "name"
+        },
+        {
+            tag: "permission-group",
+            parent: "./",
+            uniqueBy: "name"
+        },
+        {
+            tag: "instrumentation",
+            parent: "./",
+            uniqueBy: "name"
+        },
+        {
+            tag: "uses-configuration",
+            parent: "./",
+            uniqueBy: "name"
+        },
+        {
+            tag: "uses-feature",
+            parent: "./",
+            uniqueBy: "name"
+        },
+        {
+            tag: "compatible-screens",
+            parent: "./",
+            uniqueBy: "name"
+        },
+        {
+            tag: "activity",
+            parent: "./application",
+            uniqueBy: "name"
+        },
+        {
+            tag: "activity-alias",
+            parent: "./application",
+            uniqueBy: "name"
+        },
+        {
+            tag: "service",
+            parent: "./application",
+            uniqueBy: "name"
+        },
+        {
+            tag: "receiver",
+            parent: "./application",
+            uniqueBy: "name"
+        },
+        {
+            tag: "provider",
+            parent: "./application",
+            uniqueBy: "name"
+        },
+        {
+            tag: "uses-library",
+            parent: "./application",
+            uniqueBy: "name"
+        },
+        {
+            tag: "intent-filter",
+            parent: "./application/activity/[@android:name='MainActivity']",
+            uniqueBy: "label"
+        },
+        {
+            tag: "meta-data",
+            parent: "./application/activity/[@android:name='MainActivity']",
+            uniqueBy: "name"
+        }
+    ];
 
     var xcconfigs = ["build.xcconfig", "build-extras.xcconfig", "build-debug.xcconfig", "build-release.xcconfig"];
 
@@ -214,6 +294,16 @@ var applyCustomConfig = (function(){
         var tempManifest = fileUtils.parseElementtreeSync(targetFilePath),
             root = tempManifest.getroot();
 
+        var isAllowedMultiple = function(tag, parent){
+            var multipleConfig = null;
+            _.each(androidMultiples, function(multiple){
+                if(multiple.tag === tag && multiple.parent === parent){
+                    multipleConfig = multiple;
+                }
+            });
+            return multipleConfig;
+        };
+
         _.each(configItems, function (item) {
             // if parent is not found on the root, child/grandchild nodes are searched
             var parentEl = root.find(item.parent) || root.find('*/' + item.parent),
@@ -235,20 +325,26 @@ var applyCustomConfig = (function(){
             }
 
             if(item.type === 'preference') {
+                logger.debug("**PREFERENCE");
+                logger.dump(item);
+
                 if(data.attrib['delete'] === 'true') {
                     root.remove(parentEl);
                 } else {
                     parentEl.attrib[childSelector.replace("@",'')] = data.attrib['value'];
                 }
-            } else {
-                //  if there can be multiple sibling elements, we need to select them by unique name
-                if(androidRootMultiplesByName.indexOf(childSelector) > -1){
-                    childSelector += '[@android:name=\'' + data.attrib['android:name'] + '\']';
-                }
-                else if(androidRootMultiplesByLabel.indexOf(childSelector) > -1){
-                    childSelector += '[@android:label=\'' + data.attrib['android:label'] + '\']';
+            } else { // item.type === 'configFile'
+
+                logger.debug("**CONFIG-FILE");
+                logger.dump(item);
+
+                var multiple = isAllowedMultiple(childSelector, item.parent);
+                logger.debug("isAllowedMultiple: "+ !!multiple);
+                if(multiple){
+                    childSelector += "[@android:"+multiple.uniqueBy+"='" + data.attrib["android:"+multiple.uniqueBy] + "']";
                 }
 
+                logger.debug("childSelector: " + childSelector);
                 childEl = parentEl.find(childSelector);
                 // if child element doesnt exist, create new element
                 if(!childEl) {
@@ -266,6 +362,8 @@ var applyCustomConfig = (function(){
         });
         fs.writeFileSync(targetFilePath, tempManifest.write({indent: 4}), 'utf-8');
     }
+
+
     // Updates target file with data from config.xml
     function updateWp8Manifest(targetFilePath, configItems) {
         var tempManifest = fileUtils.parseElementtreeSync(targetFilePath),
