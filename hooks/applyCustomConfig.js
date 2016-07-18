@@ -317,7 +317,7 @@ var applyCustomConfig = (function(){
 
             var configPlistObj = plist.parse(plistXml);
             infoPlist[key] = configPlistObj[key];
-            logger.debug("Write to plist; key="+key+"; value="+tostr(configPlistObj[key]));
+            logger.verbose("Write to plist; key="+key+"; value="+tostr(configPlistObj[key]));
         });
 
         tempInfoPlist = plist.build(infoPlist);
@@ -389,7 +389,7 @@ var applyCustomConfig = (function(){
 
                 block["buildSettings"][name] = value;
                 modified = true;
-                logger.debug(mode+" XCBuildConfiguration key={ "+name+" } to value={ "+value+" } for build type='"+block['name']+"' in block='"+blockName+"'");
+                logger.verbose(mode+" XCBuildConfiguration key={ "+name+" } to value={ "+value+" } for build type='"+block['name']+"' in block='"+blockName+"'");
             }
         }
         return modified;
@@ -409,7 +409,7 @@ var applyCustomConfig = (function(){
             targetFilePath = path.join(platformPath, 'cordova', targetFileName);
 
         // Read file contents
-        logger.debug("Reading "+targetFileName);
+        logger.verbose("Reading "+targetFileName);
         var fileContents = fs.readFileSync(targetFilePath, 'utf-8');
 
         _.each(configItems, function (item) {
@@ -430,7 +430,7 @@ var applyCustomConfig = (function(){
 
                 var doReplace = function(){
                     fileContents = fileContents.replace(new RegExp("\n\"?"+escapedName+"\"?.*"), "\n"+name+" = "+value);
-                    logger.debug("Overwrote "+item.name+" with '"+item.value+"' in "+targetFileName);
+                    logger.verbose("Overwrote "+item.name+" with '"+item.value+"' in "+targetFileName);
                     modified = true;
                 };
 
@@ -456,7 +456,7 @@ var applyCustomConfig = (function(){
         if(modified){
             ensureBackup(targetFilePath, 'ios', targetFileName);
             fs.writeFileSync(targetFilePath, fileContents, 'utf-8');
-            logger.debug("Overwrote "+targetFileName);
+            logger.verbose("Overwrote "+targetFileName);
         }
 
     }
@@ -479,21 +479,21 @@ var applyCustomConfig = (function(){
         var backupDirExists = fileUtils.directoryExists(backupDirPath);
         if(!backupDirExists){
             fileUtils.createDirectory(backupDirPath);
-            logger.debug("Created backup directory: "+backupDirPath);
+            logger.verbose("Created backup directory: "+backupDirPath);
         }
 
         var backupPlatformExists = fileUtils.directoryExists(backupPlatformPath);
         if(!backupPlatformExists){
             fileUtils.createDirectory(backupPlatformPath);
-            logger.debug("Created backup platform directory: "+backupPlatformPath);
+            logger.verbose("Created backup platform directory: "+backupPlatformPath);
         }
 
         var backupFileExists = fileUtils.fileExists(backupFilePath);
         if(!backupFileExists){
             fs.copySync(targetFilePath, backupFilePath);
-            logger.debug("Backed up "+targetFilePath+" to "+backupFilePath);
+            logger.verbose("Backed up "+targetFilePath+" to "+backupFilePath);
         }else{
-            logger.debug("Backup exists for '"+targetFileName+"' at: "+backupFilePath);
+            logger.verbose("Backup exists for '"+targetFileName+"' at: "+backupFilePath);
         }
 
         if(!updatedFiles[targetFilePath]){
@@ -536,7 +536,7 @@ var applyCustomConfig = (function(){
 
     // Script operations are complete, so resolve deferred promises
     function complete(){
-        logger.debug("Finished applying platform config");
+        logger.verbose("Finished applying platform config");
         deferral.resolve();
     }
 
@@ -552,7 +552,7 @@ var applyCustomConfig = (function(){
             xcode = require('xcode'),
             tostr = require('tostr'),
             fileUtils = require(path.resolve(hooksPath, "fileUtils.js"))(ctx);
-        logger.debug("Loaded module dependencies");
+        logger.verbose("Loaded module dependencies");
         applyCustomConfig.init(ctx);
     };
 
@@ -592,7 +592,7 @@ module.exports = function(ctx) {
 
     hooksPath = path.resolve(ctx.opts.projectRoot, "plugins", ctx.opts.plugin.id, "hooks");
     logger = require(path.resolve(hooksPath, "logger.js"))(ctx);
-    logger.debug("Running applyCustomConfig.js");
+    logger.verbose("Running applyCustomConfig.js");
     try{
         applyCustomConfig.loadDependencies(ctx);
     }catch(e){

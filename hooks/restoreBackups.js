@@ -45,7 +45,7 @@ var restoreBackups = (function(){
         var configFiles = PLATFORM_CONFIG_FILES[platform],
             backupFile, backupFileName, backupFilePath, backupFileExists, targetFilePath;
 
-        logger.debug("Checking to see if there are backups to restore...");
+        logger.verbose("Checking to see if there are backups to restore...");
         for(backupFile in configFiles){
             backupFileName = parseProjectName(backupFile);
             backupFilePath = path.join(cwd, 'plugins', context.opts.plugin.id, "backup", platform, backupFileName);
@@ -74,7 +74,7 @@ var restoreBackups = (function(){
         fs = require('fs-extra'),
         _ = require('lodash'),
         fileUtils = require(path.resolve(hooksPath, "fileUtils.js"))(ctx);
-        logger.debug("Loaded module dependencies");
+        logger.verbose("Loaded module dependencies");
         restoreBackups.init(ctx);
     };
 
@@ -82,7 +82,7 @@ var restoreBackups = (function(){
         context = ctx;
 
         projectName = fileUtils.getProjectName();
-        logFn = context.hook === "before_plugin_uninstall" ? logger.log : logger.debug;
+        logFn = context.hook === "before_plugin_uninstall" ? logger.log : logger.verbose;
 
         settings = fileUtils.getSettings();
         if(typeof(settings.autorestore) === "undefined" || settings.autorestore == "false"){
@@ -100,7 +100,7 @@ var restoreBackups = (function(){
             try{
                 restorePlatformBackups(platform);
                 if(index == platforms.length - 1){
-                    logger.debug("Finished restoring backups");
+                    logger.verbose("Finished restoring backups");
                     complete();
                 }
             }catch(e){
@@ -123,7 +123,7 @@ module.exports = function(ctx) {
 
     hooksPath = path.resolve(ctx.opts.projectRoot, "plugins", ctx.opts.plugin.id, "hooks");
     logger = require(path.resolve(hooksPath, "logger.js"))(ctx);
-    logger.debug("Running restoreBackups.js");
+    logger.verbose("Running restoreBackups.js");
     try{
         restoreBackups.loadDependencies(ctx);
     }catch(e){
