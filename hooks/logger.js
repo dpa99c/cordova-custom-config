@@ -24,8 +24,19 @@ var logger = (function(){
         init: function(ctx){
             context = ctx;
         },
+        dump: function (obj){
+            if(context.cmdLine.match("--debug")) {
+                console.log("DUMP: "+require('util').inspect(obj));
+            }
+        },
+        debug: function(msg){
+            if(context.cmdLine.match("--debug")){
+                msg = "DEBUG: " + msg;
+                console.log(msg);
+            }
+        },
         verbose: function(msg){
-            if(context.opts.verbose || context.cmdLine.match("--verbose")){
+            if(context.opts.verbose || context.cmdLine.match("--verbose") || context.cmdLine.match("--debug")){
                 msg = prefixMsg(msg);
                 if(hasColors){
                     console.log(msg.green);
