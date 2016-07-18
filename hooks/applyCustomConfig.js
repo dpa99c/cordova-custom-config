@@ -196,18 +196,18 @@ var applyCustomConfig = (function(){
         var preferences = getPlatformPreferences(platform);
         switch(platform){
             case "ios":
-                parseiOSPreferences(preferences, configData, platform);
+                parseiOSPreferences(preferences, configData);
                 break;
             case "android":
-                parseAndroidPreferences(preferences, configData, platform);
+                parseAndroidPreferences(preferences, configData);
                 break;
         }
     }
 
     // Parses iOS preferences into project.pbxproj
-    function parseiOSPreferences(preferences, configData, platform){
+    function parseiOSPreferences(preferences, configData){
         _.each(preferences, function (preference) {
-            if(preference.attrib.name.match(new RegExp("^"+platform+"-"))){
+            if(preference.attrib.name.match(new RegExp("^ios-"))){
                 var parts = preference.attrib.name.split("-"),
                     target = "project.pbxproj",
                     prefData = {
@@ -233,7 +233,7 @@ var applyCustomConfig = (function(){
     }
 
     // Parses supported Android preferences using the preference mapping into the appropriate XML elements in AndroidManifest.xml
-    function parseAndroidPreferences(preferences, configData, platform){
+    function parseAndroidPreferences(preferences, configData){
         var type = 'preference';
 
         _.each(preferences, function (preference) {
