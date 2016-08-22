@@ -289,6 +289,34 @@ var applyCustomConfig = (function(){
         });
     }
 
+    /**
+     * @description Create paths if it's not existing
+     *
+     * @param {object} root - root element
+     * @param {object} item - element to add
+     *
+     * @returns {object}
+     */
+    function createPath(root, item) {
+        var paths = item.parent.split('/'),
+            dir, prevEl, el;
+
+        if (paths && paths.length) {
+            paths.forEach(function (path, index) {
+                dir = paths.slice(0, index + 1).join('/');
+                el = root.find(dir);
+
+                if (!el) {
+                    el = et.SubElement(prevEl ? prevEl : root, path, {});
+                }
+
+                prevEl = el;
+            });
+        }
+
+        return root.find(item.parent || root.find('*/' + item.parent));
+    }
+
     // Updates the AndroidManifest.xml target file with data from config.xml
     function updateAndroidManifest(targetFilePath, configItems) {
         var tempManifest = fileUtils.parseElementtreeSync(targetFilePath),
@@ -320,11 +348,15 @@ var applyCustomConfig = (function(){
                 parentEl = root.find(parentSelector) || root.find('*/' + parentSelector);
             });
 
-            if(!parentEl) {
+            if (item.type === 'preference' && !parentEl) {
+                parentEl = createPath(root, item);
+            }
+
+            if (!parentEl) {
                 return;
             }
 
-            if(item.type === 'preference') {
+            if (item.type === 'preference') {
                 logger.debug("**PREFERENCE");
                 logger.dump(item);
 
