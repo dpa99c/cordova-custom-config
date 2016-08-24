@@ -106,6 +106,11 @@ var applyCustomConfig = (function(){
             uniqueBy: "name"
         },
         {
+            tag: "meta-data",
+            parent: "./application",
+            uniqueBy: "name"
+        },
+        {
             tag: "intent-filter",
             parent: "./application/activity/[@android:name='MainActivity']",
             uniqueBy: "label"
