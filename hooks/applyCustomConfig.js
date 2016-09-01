@@ -178,12 +178,13 @@ var applyCustomConfig = (function(){
     function getConfigFilesByTargetAndParent(platform) {
         var configFileData = configXml.findall('platform[@name=\'' + platform + '\']/config-file');
         return  _.keyBy(configFileData, function(item) {
-            var parent = item.attrib.parent;
+            var parent = item.attrib.parent,
+                add = item.attrib.add;
             //if parent attribute is undefined /* or */, set parent to top level elementree selector
             if(!parent || parent === '/*' || parent === '*/') {
                 parent = './';
             }
-            return item.attrib.target + '|' + parent;
+            return item.attrib.target + '|' + parent + '|' + add;
         });
     }
 
@@ -279,6 +280,7 @@ var applyCustomConfig = (function(){
             var keyParts = key.split('|');
             var target = keyParts[0];
             var parent = keyParts[1];
+            var add = keyParts[2];
             var items = configData[target] || [];
 
             _.each(configFile.getchildren(), function (element) {
@@ -286,7 +288,8 @@ var applyCustomConfig = (function(){
                     parent: parent,
                     type: type,
                     destination: element.tag,
-                    data: element
+                    data: element,
+                    add: add
                 });
             });
 
@@ -384,7 +387,7 @@ var applyCustomConfig = (function(){
                 logger.debug("childSelector: " + childSelector);
                 childEl = parentEl.find(childSelector);
                 // if child element doesnt exist, create new element
-                if(!childEl) {
+                if(!childEl || item.add === 'true') {
                     childEl = new et.Element(item.destination);
                     parentEl.append(childEl);
                 }

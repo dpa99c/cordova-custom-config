@@ -32,6 +32,11 @@ cordova-custom-config plugin
 
 <!-- END table-of-contents -->
 
+# What's new in this fork?
+
+- it's possible to add multiple meta-data tags in manifest (unique by name)
+- when you add attribute add="true" to config-file, nodes inside will be created in manifest (instead of replace by uniquBy field)
+
 # Overview
 
 This Cordova/Phonegap plugin for iOS and Android provides hook scripts to update platform configuration files based on custom preferences and config-file data defined in config.xml
