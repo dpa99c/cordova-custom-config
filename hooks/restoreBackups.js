@@ -85,7 +85,7 @@ var restoreBackups = (function(){
         logFn = context.hook === "before_plugin_uninstall" ? logger.log : logger.verbose;
 
         settings = fileUtils.getSettings();
-        if(typeof(settings.autorestore) === "undefined" || settings.autorestore == "false"){
+        if(typeof(settings.autorestore) === "undefined" || settings.autorestore === "false"){
             logger.log("Skipping auto-restore of config file backup(s)");
             complete();
             return;
@@ -99,7 +99,7 @@ var restoreBackups = (function(){
             platform = platform.trim().toLowerCase();
             try{
                 restorePlatformBackups(platform);
-                if(index == platforms.length - 1){
+                if(index === platforms.length - 1){
                     logger.verbose("Finished restoring backups");
                     complete();
                 }

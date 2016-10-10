@@ -132,7 +132,7 @@
                                 }
                                 logger.verbose("Removed package.json.tmp");
                                 complete();
-                            })
+                            });
                         });
                     } else {
                         deleteFile(targetPackageJson, function (err) {
@@ -142,7 +142,7 @@
                             }
                             logger.verbose("Removed our package.json");
                             complete();
-                        })
+                        });
                     }
                 });
 

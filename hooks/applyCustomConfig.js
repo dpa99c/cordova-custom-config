@@ -484,7 +484,7 @@ var applyCustomConfig = (function(){
             if(err){
                 // shell is undefined if android platform has been removed and added with a new package id but ios stayed the same.
                 var msg = 'An error occurred during parsing of [' + xcodeProjectPath + ']: ' + JSON.stringify(err);
-                if(typeof shell != "undefined" && shell != null){
+                if(typeof shell !== "undefined" && shell !== null){
                     shell.echo(msg);
                 } else{
                     logger.error(msg + ' - Maybe you forgot to remove/add the ios platform?');
@@ -531,9 +531,9 @@ var applyCustomConfig = (function(){
                     name = literalMatch ? item.name : quoteEscape(item.name);
                 }else{
                     // adding
-                    name = (item.quote && (item.quote == "none" || item.quote == "value")) ? item.name : quoteEscape(item.name);
+                    name = (item.quote && (item.quote === "none" || item.quote === "value")) ? item.name : quoteEscape(item.name);
                 }
-                var value = (item.quote && (item.quote == "none" || item.quote == "key")) ? item.value : quoteEscape(item.value);
+                var value = (item.quote && (item.quote === "none" || item.quote === "key")) ? item.value : quoteEscape(item.value);
 
                 block["buildSettings"][name] = value;
                 modified = true;
@@ -548,7 +548,7 @@ var applyCustomConfig = (function(){
      */
     function updateXCConfigs(configItems, platformPath){
         xcconfigs.forEach(function(fileName){
-            updateXCConfig(platformPath, fileName, configItems)
+            updateXCConfig(platformPath, fileName, configItems);
         });
     }
 
@@ -585,17 +585,17 @@ var applyCustomConfig = (function(){
                 // If item's target build type matches the xcconfig build type
                 if(itemBuildType === fileBuildType){
                     // If file contains the item, replace it with configured value
-                    if(fileContents.match(escapedName) && item.xcconfigEnforce != "false"){
+                    if(fileContents.match(escapedName) && item.xcconfigEnforce !== "false"){
                         doReplace();
                     }else // presence of item is being enforced, so add it to the relevant .xcconfig
-                    if(item.xcconfigEnforce == "true"){
+                    if(item.xcconfigEnforce === "true"){
                         fileContents += "\n"+name+" = "+value;
                         modified = true;
                     }
                 }else
                 // if item is a Debug CODE_SIGNING_IDENTITY, this is a special case: Cordova places its default Debug CODE_SIGNING_IDENTITY in build.xcconfig (not build-debug.xcconfig)
                 // so if buildType="debug", want to overrwrite in build.xcconfig
-                if(item.name.match("CODE_SIGN_IDENTITY") && itemBuildType == "debug" && fileBuildType == "none" && !item.xcconfigEnforce){
+                if(item.name.match("CODE_SIGN_IDENTITY") && itemBuildType === "debug" && fileBuildType === "none" && !item.xcconfigEnforce){
                     doReplace();
                 }
             }
@@ -713,7 +713,7 @@ var applyCustomConfig = (function(){
         settings = fileUtils.getSettings();
         var runHook = settings.hook ? settings.hook : defaultHook;
 
-        if(context.hook != runHook){
+        if(context.hook !== runHook){
             logger.debug("Aborting applyCustomConfig.js because current hook '"+context.hook+"' is not configured hook '"+runHook+"'");
             return complete();
         }
@@ -723,7 +723,7 @@ var applyCustomConfig = (function(){
             platform = platform.trim().toLowerCase();
             try{
                 updatePlatformConfig(platform);
-                if(index == context.opts.platforms.length - 1){
+                if(index === context.opts.platforms.length - 1){
                     complete();
                 }
             }catch(e){
