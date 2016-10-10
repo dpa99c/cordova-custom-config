@@ -368,11 +368,16 @@ var applyCustomConfig = (function(){
             }
 
             if (item.type === 'preference') {
-                logger.debug("**PREFERENCE");
-                logger.dump(item);
+                logger.debug("**PREFERENCE"); logger.dump(item);
+
+                logger.debug("**parentEl"); logger.dump(parentEl);
 
                 if(data.attrib['delete'] === 'true') {
-                    root.remove(parentEl);
+                    logger.debug("Deleting preference");
+                    childEl = parentEl.find(childSelector);
+                    logger.debug("**childEl"); logger.dump(childEl);
+
+                    parentEl.remove(childEl);
                 } else {
                     parentEl.attrib[childSelector.replace("@",'')] = data.attrib['value'];
                 }
@@ -389,6 +394,8 @@ var applyCustomConfig = (function(){
 
                 logger.debug("childSelector: " + childSelector);
                 childEl = parentEl.find(childSelector);
+                logger.debug("**childEl"); logger.dump(childEl);
+
                 // if child element doesnt exist, create new element
                 if(!childEl || item.add === 'true') {
                     childEl = new et.Element(item.destination);
