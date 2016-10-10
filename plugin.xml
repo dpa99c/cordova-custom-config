@@ -22,6 +22,4 @@
     <hook src="hooks/restoreBackups.js" type="before_prepare" />
     <hook src="hooks/restoreBackups.js" type="before_plugin_uninstall" />
     <hook src="hooks/applyCustomConfig.js" type="after_prepare" />
-    <hook src="hooks/resolveDependencies.js" type="after_plugin_install"  />
-    <hook src="hooks/resolveDependencies.js" type="before_platform_add"  />
 </plugin>

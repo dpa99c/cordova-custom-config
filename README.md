@@ -8,8 +8,6 @@ cordova-custom-config plugin
   - [Why should I use it?](#why-should-i-use-it)
   - [Important note for PhoneGap Build / Intel XDK](#important-note-for-phonegap-build--intel-xdk)
 - [Installation](#installation)
-  - [Using the Cordova/Phonegap CLI](#using-the-cordovaphonegap-cli)
-  - [Using Cordova Plugman](#using-cordova-plugman)
 - [Usage](#usage)
   - [Removable preferences via backup/restore](#removable-preferences-via-backuprestore)
   - [Preferences](#preferences)
@@ -26,16 +24,10 @@ cordova-custom-config plugin
   - [Log output](#log-output)
 - [Example project](#example-project)
 - [TODO](#todo)
-- [Version notes](#version-notes)
 - [Credits](#credits)
 - [License](#license)
 
 <!-- END table-of-contents -->
-
-# What's new in this fork?
-
-- it's possible to add multiple meta-data tags in manifest (unique by name)
-- when you add attribute add="true" to config-file, nodes inside will be created in manifest (instead of replace by uniquBy field)
 
 # Overview
 
@@ -66,21 +58,14 @@ If you are using another cloud-based Cordova/Phonegap build service and find thi
 
 # Installation
 
-Upon installing this plugin, an `after_plugin_add` hook script will run to satisfy npm dependencies defined in the package.json.
+As of `cordova-custom-config@3`, the [`cordova-fetch` feature](https://cordova.apache.org/news/2016/05/24/tools-release.html) is used to resolve the dependencies for this plugin. This means you must be using at least `cordova@6.2.0` or `phonegap@6.2.0`.
+
+To install the plugin with its dependencies, use the `--fetch` argument:
+
+    $ cordova plugin add cordova-custom-config --fetch
+    $ phonegap plugin add cordova-custom-config --fetch
+    
 Any modules that need to be installed will be placed in a `node_modules` folder inside the project folder.
-
-## Using the Cordova/Phonegap CLI
-
-    $ cordova plugin add cordova-custom-config
-    $ phonegap plugin add cordova-custom-config
-
-## Using Cordova Plugman
-
-    $ plugman install --plugin=cordova-custom-config --platform=<platform> --project=<project_path> --plugins_dir=plugins
-
-For example, to install for the Android platform
-
-    $ plugman install --plugin=cordova-custom-config --platform=android --project=platforms/android --plugins_dir=plugins
 
 # Usage
 
@@ -142,7 +127,7 @@ For a list of possible manifest values see [http://developer.android.com/guide/t
     - will result in `AndroidManifest.xml`: `<manifest android:hardwareAccelerated="false">`
 - Sometimes there plugins set some defaults in AndroidManifest.xml that you may not want.
   It is also possible to delete nodes using the preferences and the `delete="true"` attribute.
-  - e.g. `<preference name="android-manifest/uses-permission/[@android:name='android.permission.WRITE_CONTACTS']/@android:name" delete="true" />`
+  - e.g. `<preference name="android-manifest/uses-permission/[@android:name='android.permission.WRITE_CONTACTS']" delete="true" />`
   - will delete the existing node `<uses-permission android:name="android.permission.WRITE_CONTACTS" />`
 
 #### Android namespace attribute
@@ -208,16 +193,24 @@ will result in `AndroidManifest.xml` with:
         </application>
     </manifest>
 
-**NOTE:** if the specified parent element contains an existing child element of the same name as that defined in the XML subtree, the existing element will be overwritten.
+**NOTE:** By default, if the specified parent element contains an existing child element of the same name as that defined in the XML subtree, the existing element will be overwritten.
 For example:
 
     <config-file target="AndroidManifest.xml">
         <application android:name="MyApp" />
     </config-file>
 
-will replace the existing `<application>` element. In this case, it would be better to use a preference:
+will replace the existing `<application>` element(s).
+    
+- To force the preservation (rather than replacement) of existing child elements, you can use the `add="true"` attribute. So for the example above:
 
-    <preference name="android-manifest/application/@android:name" value="MyApp" />
+
+    <config-file target="AndroidManifest.xml" add="true">
+        <application android:name="MyApp" />
+    </config-file>
+    
+will preserve the existing `<application>` element(s).     
+
 
 ### Android example
 
@@ -440,24 +433,10 @@ An example project illustrating use of this plugin can be found here: [https://g
 
 See the [TODO list](https://github.com/dpa99c/cordova-custom-config/wiki/TODO) for planned features/improvements.
 
-# Version notes
-
-**`cordova-custom-config@2.0.0`**
-
-- changes made by the plugin are non-reversible by default, so removing a custom element from the config.xml will **not** remove it from the platform configuration file.
-To make plugin changes reversible, see [Removable preferences via backup/restore](#removable-preferences-via-backuprestore).
-- Support for pre-defined preferences used prior to `cordova-custom-config@1.1.8` has been removed.
-
-**`cordova-custom-config@1.1.8`**
-
-- Android manifest preferences are set by using XPaths in the preference name to define which element attribute the value should be applied to.
-
 
 # Credits
 
 Config update hook based on [this hook](https://github.com/diegonetto/generator-ionic/blob/master/templates/hooks/after_prepare/update_platform_config.js) by [Diego Netto](https://github.com/diegonetto)
-
-NPM module dependency resolution is based on [this hook](https://github.com/nordnet/cordova-universal-links-plugin/blob/master/hooks/afterPluginAddHook.js) by [@nikDemyankov](https://github.com/nikDemyankov)
 
 # License
 ================
