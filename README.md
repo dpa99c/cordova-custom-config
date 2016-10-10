@@ -227,6 +227,9 @@ config.xml:
 
         <!-- specify activity name -->
         <preference name="android-manifest/application/activity[@android:name='MainActivity']/@android:launchMode" value="singleTask" />
+        
+        <!-- Delete an element -->
+        <preference name="android-manifest/application/activity[@android:name='DeleteMe']" delete="true" />
 
 
         <!-- These preferences are actually available in Cordova by default although not currently documented -->
@@ -249,6 +252,11 @@ config.xml:
 
             <uses-permission android:name="android.permission.READ_CONTACTS" android:maxSdkVersion="15" />
             <uses-permission android:name="android.permission.WRITE_CONTACTS" />
+        </config-file>
+        
+        <!-- Add (rather than overwrite) a config-file block -->
+        <config-file target="AndroidManifest.xml" parent="./" add="true">
+            <application android:name="customApplication"></application>
         </config-file>
     </platform>
 
