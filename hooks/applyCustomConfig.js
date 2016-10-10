@@ -693,7 +693,7 @@ var applyCustomConfig = (function(){
      *************/
 
     applyCustomConfig.loadDependencies = function(ctx){
-        fs = require('fs-extra'),
+        fs = require('fs'),
             _ = require('lodash'),
             et = require('elementtree'),
             plist = require('plist'),

@@ -52,7 +52,7 @@ var restoreBackups = (function(){
             backupFileExists = fileUtils.fileExists(backupFilePath);
             if(backupFileExists){
                 targetFilePath = path.join(cwd, 'platforms', platform, parseProjectName(configFiles[backupFile]));
-                fs.copySync(backupFilePath, targetFilePath);
+                fileUtils.copySync(backupFilePath, targetFilePath);
                 logFn("Restored backup of '"+backupFileName+"' to :"+targetFilePath);
             }
         }
@@ -71,7 +71,7 @@ var restoreBackups = (function(){
      * Public API
      *************/
     restoreBackups.loadDependencies = function(ctx){
-        fs = require('fs-extra'),
+        fs = require('fs'),
         _ = require('lodash'),
         fileUtils = require(path.resolve(hooksPath, "fileUtils.js"))(ctx);
         logger.verbose("Loaded module dependencies");

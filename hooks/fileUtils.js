@@ -86,11 +86,16 @@ var fileUtils = (function(){
         return fs.mkdirSync(dirPath);
     };
 
+    fileUtils.copySync = function (sourcePath, targetPath){
+        var contents = fs.readFileSync(sourcePath);
+        fs.writeFileSync(targetPath, contents);
+    };
+
     fileUtils.init = function(ctx){
         context = ctx;
 
         // Load modules
-        fs = require('fs-extra'),
+        fs = require('fs'),
         path = require('path'),
         _ = require('lodash'),
         et = require('elementtree'),
