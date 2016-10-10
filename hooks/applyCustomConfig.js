@@ -638,7 +638,7 @@ var applyCustomConfig = (function(){
 
         var backupFileExists = fileUtils.fileExists(backupFilePath);
         if(!backupFileExists){
-            fs.copySync(targetFilePath, backupFilePath);
+            fileUtils.copySync(targetFilePath, backupFilePath);
             logger.verbose("Backed up "+targetFilePath+" to "+backupFilePath);
         }else{
             logger.verbose("Backup exists for '"+targetFileName+"' at: "+backupFilePath);
