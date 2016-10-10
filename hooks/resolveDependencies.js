@@ -66,9 +66,9 @@
         logger.log("Installing plugin dependencies...");
         
         var cmd = 'npm install';
-        logger.debug("Running " + cmd);
+        logger.verbose("Running " + cmd);
         exec(cmd, function (err, stdout, stderr) {
-            logger.debug("Completed " + cmd);
+            logger.verbose("Completed " + cmd);
             cb(err);
         });
     }
@@ -77,13 +77,13 @@
     function checkForRealPackageJson(){
         fileExists(targetPackageJson, function (exists) {
             if (exists) {
-                logger.debug("package.json already exists");
+                logger.verbose("package.json already exists");
                 copyFile(targetPackageJson, tempPackageJson, function (err) {
                     if (err) {
                         deferral.reject("Error copying package.json to package.json.tmp: " + err);
                         return -1;
                     }
-                    logger.debug("Copied existing package.json to package.json.tmp");
+                    logger.verbose("Copied existing package.json to package.json.tmp");
                     deployPluginPackageJson();
                 });
             } else {
@@ -94,43 +94,43 @@
 
     // Dependency resolution is complete
     function complete() {
-        logger.debug("Dependency resolution complete");
+        logger.verbose("Dependency resolution complete");
         deferral.resolve();
     }
 
 
     // Deploy our plugin's package.json and execute npm install
     function deployPluginPackageJson() {
-        logger.debug("Copying package.json");
+        logger.verbose("Copying package.json");
         copyFile(sourcePackageJson, targetPackageJson, function (err) {
             if (err) {
                 deferral.reject("Error copying plugin's package.json: " + err);
                 return -1;
             }
-            logger.debug("Copied package.json");
+            logger.verbose("Copied package.json");
             installModules(function(err) {
                 if (err) {
                     deferral.reject("Error installing modules: " + err);
                     return -1;
                 }
-                logger.debug("Installed modules");
+                logger.verbose("Installed modules");
                 fileExists(tempPackageJson, function (exists) {
                     if (exists) {
-                        logger.debug("package.json.tmp exists");
+                        logger.verbose("package.json.tmp exists");
                         copyFile(tempPackageJson, targetPackageJson, function (err) {
                             if (err) {
                                 deferral.reject("Error restoring package.json.tmp to package.json: " + err);
                                 return -1;
                             }
-                            logger.debug("Overwrote our package.json with original package.json.tmp");
+                            logger.verbose("Overwrote our package.json with original package.json.tmp");
 
-                            logger.debug("Removing package.json.tmp");
+                            logger.verbose("Removing package.json.tmp");
                             deleteFile(tempPackageJson, function (err) {
                                 if (err) {
                                     deferral.reject("Error removing package.json.tmp: " + err);
                                     return -1;
                                 }
-                                logger.debug("Removed package.json.tmp");
+                                logger.verbose("Removed package.json.tmp");
                                 complete();
                             })
                         });
@@ -140,7 +140,7 @@
                                 deferral.reject("Error removing our package.json: " + err);
                                 return -1;
                             }
-                            logger.debug("Removed our package.json");
+                            logger.verbose("Removed our package.json");
                             complete();
                         })
                     }

@@ -34,11 +34,91 @@ var applyCustomConfig = (function(){
         "MainActivity" // Cordova >= 4.3.0
     ];
 
-    // Tags that can appear multiple times in the <root> manifest, distinguished by name
-    var androidRootMultiplesByName = ["uses-permission", "permission", "permission-tree", "permission-group", "instrumentation", "uses-sdk", "uses-configuration", "uses-feature", "supports-screens", "compatible-screens", "supports-gl-texture"];
-    
-    // Tags that can appear multiple times in the <root> manifest, distinguished by label
-    var androidRootMultiplesByLabel = ["intent-filter"];
+    // Tags that can appear multiple times
+    // Specified by parent and distinguished by name or label
+
+    var androidMultiples = [
+        {
+            tag: "uses-permission",
+            parent: "./",
+            uniqueBy: "name"
+        },
+        {
+            tag: "permission",
+            parent: "./",
+            uniqueBy: "name"
+        },
+        {
+            tag: "permission-tree",
+            parent: "./",
+            uniqueBy: "name"
+        },
+        {
+            tag: "permission-group",
+            parent: "./",
+            uniqueBy: "name"
+        },
+        {
+            tag: "instrumentation",
+            parent: "./",
+            uniqueBy: "name"
+        },
+        {
+            tag: "uses-configuration",
+            parent: "./",
+            uniqueBy: "name"
+        },
+        {
+            tag: "uses-feature",
+            parent: "./",
+            uniqueBy: "name"
+        },
+        {
+            tag: "compatible-screens",
+            parent: "./",
+            uniqueBy: "name"
+        },
+        {
+            tag: "activity",
+            parent: "./application",
+            uniqueBy: "name"
+        },
+        {
+            tag: "activity-alias",
+            parent: "./application",
+            uniqueBy: "name"
+        },
+        {
+            tag: "service",
+            parent: "./application",
+            uniqueBy: "name"
+        },
+        {
+            tag: "receiver",
+            parent: "./application",
+            uniqueBy: "name"
+        },
+        {
+            tag: "provider",
+            parent: "./application",
+            uniqueBy: "name"
+        },
+        {
+            tag: "uses-library",
+            parent: "./application",
+            uniqueBy: "name"
+        },
+        {
+            tag: "intent-filter",
+            parent: "./application/activity/[@android:name='MainActivity']",
+            uniqueBy: "label"
+        },
+        {
+            tag: "meta-data",
+            parent: "./application/activity/[@android:name='MainActivity']",
+            uniqueBy: "name"
+        }
+    ];
 
     var xcconfigs = ["build.xcconfig", "build-extras.xcconfig", "build-debug.xcconfig", "build-release.xcconfig"];
 
@@ -119,18 +199,18 @@ var applyCustomConfig = (function(){
         var preferences = getPlatformPreferences(platform);
         switch(platform){
             case "ios":
-                parseiOSPreferences(preferences, configData, platform);
+                parseiOSPreferences(preferences, configData);
                 break;
             case "android":
-                parseAndroidPreferences(preferences, configData, platform);
+                parseAndroidPreferences(preferences, configData);
                 break;
         }
     }
 
     // Parses iOS preferences into project.pbxproj
-    function parseiOSPreferences(preferences, configData, platform){
+    function parseiOSPreferences(preferences, configData){
         _.each(preferences, function (preference) {
-            if(preference.attrib.name.match(new RegExp("^"+platform+"-"))){
+            if(preference.attrib.name.match(new RegExp("^ios-"))){
                 var parts = preference.attrib.name.split("-"),
                     target = "project.pbxproj",
                     prefData = {
@@ -156,7 +236,7 @@ var applyCustomConfig = (function(){
     }
 
     // Parses supported Android preferences using the preference mapping into the appropriate XML elements in AndroidManifest.xml
-    function parseAndroidPreferences(preferences, configData, platform){
+    function parseAndroidPreferences(preferences, configData){
         var type = 'preference';
 
         _.each(preferences, function (preference) {
@@ -217,6 +297,16 @@ var applyCustomConfig = (function(){
         var tempManifest = fileUtils.parseElementtreeSync(targetFilePath),
             root = tempManifest.getroot();
 
+        var isAllowedMultiple = function(tag, parent){
+            var multipleConfig = null;
+            _.each(androidMultiples, function(multiple){
+                if(multiple.tag === tag && multiple.parent === parent){
+                    multipleConfig = multiple;
+                }
+            });
+            return multipleConfig;
+        };
+
         _.each(configItems, function (item) {
             // if parent is not found on the root, child/grandchild nodes are searched
             var parentEl = root.find(item.parent) || root.find('*/' + item.parent),
@@ -238,17 +328,26 @@ var applyCustomConfig = (function(){
             }
 
             if(item.type === 'preference') {
-                parentEl.attrib[childSelector.replace("@",'')] = data.attrib['value'];
+                logger.debug("**PREFERENCE");
+                logger.dump(item);
 
-            } else {
-                //  if there can be multiple sibling elements, we need to select them by unique name
-                if(androidRootMultiplesByName.indexOf(childSelector) > -1){
-                    childSelector += '[@android:name=\'' + data.attrib['android:name'] + '\']';
+                if(data.attrib['delete'] === 'true') {
+                    root.remove(parentEl);
+                } else {
+                    parentEl.attrib[childSelector.replace("@",'')] = data.attrib['value'];
                 }
-                else if(androidRootMultiplesByLabel.indexOf(childSelector) > -1){
-                    childSelector += '[@android:label=\'' + data.attrib['android:label'] + '\']';
+            } else { // item.type === 'configFile'
+
+                logger.debug("**CONFIG-FILE");
+                logger.dump(item);
+
+                var multiple = isAllowedMultiple(childSelector, item.parent);
+                logger.debug("isAllowedMultiple: "+ !!multiple);
+                if(multiple){
+                    childSelector += "[@android:"+multiple.uniqueBy+"='" + data.attrib["android:"+multiple.uniqueBy] + "']";
                 }
 
+                logger.debug("childSelector: " + childSelector);
                 childEl = parentEl.find(childSelector);
                 // if child element doesnt exist, create new element
                 if(!childEl) {
@@ -266,6 +365,8 @@ var applyCustomConfig = (function(){
         });
         fs.writeFileSync(targetFilePath, tempManifest.write({indent: 4}), 'utf-8');
     }
+
+
     // Updates target file with data from config.xml
     function updateWp8Manifest(targetFilePath, configItems) {
         var tempManifest = fileUtils.parseElementtreeSync(targetFilePath),
@@ -317,7 +418,7 @@ var applyCustomConfig = (function(){
 
             var configPlistObj = plist.parse(plistXml);
             infoPlist[key] = configPlistObj[key];
-            logger.debug("Write to plist; key="+key+"; value="+tostr(configPlistObj[key]));
+            logger.verbose("Write to plist; key="+key+"; value="+tostr(configPlistObj[key]));
         });
 
         tempInfoPlist = plist.build(infoPlist);
@@ -389,7 +490,7 @@ var applyCustomConfig = (function(){
 
                 block["buildSettings"][name] = value;
                 modified = true;
-                logger.debug(mode+" XCBuildConfiguration key={ "+name+" } to value={ "+value+" } for build type='"+block['name']+"' in block='"+blockName+"'");
+                logger.verbose(mode+" XCBuildConfiguration key={ "+name+" } to value={ "+value+" } for build type='"+block['name']+"' in block='"+blockName+"'");
             }
         }
         return modified;
@@ -409,7 +510,7 @@ var applyCustomConfig = (function(){
             targetFilePath = path.join(platformPath, 'cordova', targetFileName);
 
         // Read file contents
-        logger.debug("Reading "+targetFileName);
+        logger.verbose("Reading "+targetFileName);
         var fileContents = fs.readFileSync(targetFilePath, 'utf-8');
 
         _.each(configItems, function (item) {
@@ -430,7 +531,7 @@ var applyCustomConfig = (function(){
 
                 var doReplace = function(){
                     fileContents = fileContents.replace(new RegExp("\n\"?"+escapedName+"\"?.*"), "\n"+name+" = "+value);
-                    logger.debug("Overwrote "+item.name+" with '"+item.value+"' in "+targetFileName);
+                    logger.verbose("Overwrote "+item.name+" with '"+item.value+"' in "+targetFileName);
                     modified = true;
                 };
 
@@ -456,7 +557,7 @@ var applyCustomConfig = (function(){
         if(modified){
             ensureBackup(targetFilePath, 'ios', targetFileName);
             fs.writeFileSync(targetFilePath, fileContents, 'utf-8');
-            logger.debug("Overwrote "+targetFileName);
+            logger.verbose("Overwrote "+targetFileName);
         }
 
     }
@@ -479,21 +580,21 @@ var applyCustomConfig = (function(){
         var backupDirExists = fileUtils.directoryExists(backupDirPath);
         if(!backupDirExists){
             fileUtils.createDirectory(backupDirPath);
-            logger.debug("Created backup directory: "+backupDirPath);
+            logger.verbose("Created backup directory: "+backupDirPath);
         }
 
         var backupPlatformExists = fileUtils.directoryExists(backupPlatformPath);
         if(!backupPlatformExists){
             fileUtils.createDirectory(backupPlatformPath);
-            logger.debug("Created backup platform directory: "+backupPlatformPath);
+            logger.verbose("Created backup platform directory: "+backupPlatformPath);
         }
 
         var backupFileExists = fileUtils.fileExists(backupFilePath);
         if(!backupFileExists){
             fs.copySync(targetFilePath, backupFilePath);
-            logger.debug("Backed up "+targetFilePath+" to "+backupFilePath);
+            logger.verbose("Backed up "+targetFilePath+" to "+backupFilePath);
         }else{
-            logger.debug("Backup exists for '"+targetFileName+"' at: "+backupFilePath);
+            logger.verbose("Backup exists for '"+targetFileName+"' at: "+backupFilePath);
         }
 
         if(!updatedFiles[targetFilePath]){
@@ -536,7 +637,7 @@ var applyCustomConfig = (function(){
 
     // Script operations are complete, so resolve deferred promises
     function complete(){
-        logger.debug("Finished applying platform config");
+        logger.verbose("Finished applying platform config");
         deferral.resolve();
     }
 
@@ -552,7 +653,7 @@ var applyCustomConfig = (function(){
             xcode = require('xcode'),
             tostr = require('tostr'),
             fileUtils = require(path.resolve(hooksPath, "fileUtils.js"))(ctx);
-        logger.debug("Loaded module dependencies");
+        logger.verbose("Loaded module dependencies");
         applyCustomConfig.init(ctx);
     };
 
@@ -570,15 +671,12 @@ var applyCustomConfig = (function(){
             return complete();
         }
 
-        // go through each of the platform directories that have been prepared
-        var platforms = _.filter(fs.readdirSync('platforms'), function (file) {
-            return fs.statSync(path.resolve('platforms', file)).isDirectory();
-        });
-        _.each(platforms, function (platform, index) {
+        // go through each of the context platforms
+        _.each(context.opts.platforms, function (platform, index) {
             platform = platform.trim().toLowerCase();
             try{
                 updatePlatformConfig(platform);
-                if(index == platforms.length - 1){
+                if(index == context.opts.platforms.length - 1){
                     complete();
                 }
             }catch(e){
@@ -601,7 +699,7 @@ module.exports = function(ctx) {
 
     hooksPath = path.resolve(ctx.opts.projectRoot, "plugins", ctx.opts.plugin.id, "hooks");
     logger = require(path.resolve(hooksPath, "logger.js"))(ctx);
-    logger.debug("Running applyCustomConfig.js");
+    logger.verbose("Running applyCustomConfig.js");
     try{
         applyCustomConfig.loadDependencies(ctx);
     }catch(e){
