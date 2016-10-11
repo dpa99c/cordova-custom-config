@@ -23,7 +23,7 @@ var fileUtils = (function(){
      * Public API
      ************/
 
-    // Parses a given file into an elementtree object
+        // Parses a given file into an elementtree object
     fileUtils.parseElementtreeSync =  function(filename) {
         var contents = fs.readFileSync(filename, 'utf-8');
         if(contents) {
@@ -91,14 +91,18 @@ var fileUtils = (function(){
         fs.writeFileSync(targetPath, contents);
     };
 
+    fileUtils.copySyncRelative = function (sourcePath, targetPath){
+        fileUtils.copySync(path.resolve(sourcePath), path.resolve(targetPath));
+    };
+
     fileUtils.init = function(ctx){
         context = ctx;
 
         // Load modules
-        fs = require('fs'),
-        path = require('path'),
-        _ = require('lodash'),
-        et = require('elementtree'),
+        fs = require('fs');
+        path = require('path');
+        _ = require('lodash');
+        et = require('elementtree');
         tostr = require('tostr');
     };
     return fileUtils;
