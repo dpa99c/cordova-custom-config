@@ -751,7 +751,8 @@ module.exports = function(ctx) {
     try{
         applyCustomConfig.loadDependencies(ctx);
     }catch(e){
-        logger.error("Error loading dependencies ("+e.message+")");
+        logger.warn("Error loading dependencies ("+e.message+") - attempting to resolve");
+        require(path.resolve(hooksPath, "resolveDependencies.js"))(ctx).then(applyCustomConfig.loadDependencies.bind(this, ctx));
     }
 
     return deferral.promise;
