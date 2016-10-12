@@ -174,14 +174,24 @@ var applyCustomConfig = (function(){
         return prefs;
     }
 
+    /**
+     * Implementation of _.keyBy so old versions of lodash (<2.0.0) don't cause issues
+     */
+    function keyBy(arr, fn){
+        var result = {};
+        arr.forEach(function(v){
+            result[fn(v)] = v;
+        });
+        return result;
+    }
+
     /* Retrieves all configured xml for a specific platform/target/parent element nested inside a platforms config-file
      element within the config.xml.  The config-file elements are then indexed by target|parent so if there are
      any config-file elements per platform that have the same target and parent, the last config-file element is used.
      */
     function getConfigFilesByTargetAndParent(platform) {
         var configFileData = configXml.findall('platform[@name=\'' + platform + '\']/config-file');
-        var keyBy = _.keyBy || _.indexBy; // backward compatibility for lodash < 4.0.0
-        return  keyBy(configFileData, function(item) {
+        var result = keyBy(configFileData, function(item) {
             var parent = item.attrib.parent,
                 add = item.attrib.add;
             //if parent attribute is undefined /* or */, set parent to top level elementree selector
@@ -190,6 +200,7 @@ var applyCustomConfig = (function(){
             }
             return item.attrib.target + '|' + parent + '|' + add;
         });
+        return result;
     }
 
     // Parses the config.xml's preferences and config-file elements for a given platform
@@ -752,8 +763,7 @@ module.exports = function(ctx) {
     try{
         applyCustomConfig.loadDependencies(ctx);
     }catch(e){
-        logger.warn("Error loading dependencies ("+e.message+") - attempting to resolve");
-        require(path.resolve(hooksPath, "resolveDependencies.js"))(ctx).then(applyCustomConfig.loadDependencies.bind(this, ctx));
+        logger.error("Error loading dependencies ("+e.message+")");
     }
 
     return deferral.promise;
