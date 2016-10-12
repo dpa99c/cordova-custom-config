@@ -28,7 +28,6 @@
         "plist",
         "manifest"
     ],
-
     "dependencies": {
         "lodash": "^4.3.0",
         "elementtree": "^0.1.6",
@@ -37,5 +36,11 @@
         "colors": "^1.1.2",
         "shelljs": "^0.7.0",
         "tostr": "^0.1.0"
+    },
+    "devDependencies": {
+        "jshint": "^2.6.0"
+    },
+    "scripts": {
+        "test": "jshint hooks"
     }
 }
