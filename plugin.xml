@@ -9,7 +9,7 @@
     <author>Dave Alden</author>
 
     <engines>
-        <engine name="cordova" version=">=3.0.0" />
+        <engine name="cordova" version=">=6.2.0" />
     </engines>
 
     <repo>https://github.com/dpa99c/cordova-custom-config.git</repo>
@@ -19,6 +19,7 @@
 
     <license>MIT</license>
 
+    <hook src="hooks/resolveDependencies.js" type="after_plugin_install" />
     <hook src="hooks/restoreBackups.js" type="before_prepare" />
     <hook src="hooks/restoreBackups.js" type="before_plugin_uninstall" />
     <hook src="hooks/applyCustomConfig.js" type="after_prepare" />
