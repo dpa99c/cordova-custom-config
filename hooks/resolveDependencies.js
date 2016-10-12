@@ -16,7 +16,7 @@ module.exports = function(ctx){
         moduleExists =  fs.statSync(requiredModulePath).isDirectory();
     }
     catch (err) {
-        moduleExists = false
+        moduleExists = false;
     }
 
     if(!moduleExists){
