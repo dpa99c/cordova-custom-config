@@ -729,6 +729,7 @@ var applyCustomConfig = (function(){
             }catch(e){
                 var msg = "Error updating config for platform '"+platform+"': "+ e.message;
                 logger.error(msg);
+                logger.dump(e);
                 if(settings.stoponerror){
                     deferral.reject(msg);
                 }
