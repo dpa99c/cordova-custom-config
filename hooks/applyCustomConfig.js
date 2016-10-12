@@ -180,7 +180,8 @@ var applyCustomConfig = (function(){
      */
     function getConfigFilesByTargetAndParent(platform) {
         var configFileData = configXml.findall('platform[@name=\'' + platform + '\']/config-file');
-        return  _.keyBy(configFileData, function(item) {
+        var keyBy = _.keyBy || _.indexBy; // backward compatibility for lodash < 4.0.0
+        return  keyBy(configFileData, function(item) {
             var parent = item.attrib.parent,
                 add = item.attrib.add;
             //if parent attribute is undefined /* or */, set parent to top level elementree selector
