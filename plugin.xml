@@ -2,14 +2,14 @@
 <plugin xmlns="http://www.phonegap.com/ns/plugins/1.0"
     xmlns:android="http://schemas.android.com/apk/res/android"
     id="cordova-custom-config"
-    version="3.0.5">
+    version="3.0.6">
 
     <name>cordova-custom-config</name>
     <description>Cordova/Phonegap plugin to update platform configuration files based on preferences and config-file data defined in config.xml</description>
     <author>Dave Alden</author>
 
     <engines>
-        <engine name="cordova" version=">=6.2.0" />
+        <engine name="cordova" version=">=3.0.0" />
     </engines>
 
     <repo>https://github.com/dpa99c/cordova-custom-config.git</repo>
