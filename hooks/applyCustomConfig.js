@@ -377,7 +377,7 @@ var applyCustomConfig = (function(){
                     childEl = parentEl.find(childSelector);
                     logger.debug("**childEl"); logger.dump(childEl);
 
-                    parentEl.remove(childEl);
+                    if(childEl) parentEl.remove(childEl);
                 } else {
                     parentEl.attrib[childSelector.replace("@",'')] = data.attrib['value'];
                 }
