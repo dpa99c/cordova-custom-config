@@ -65,6 +65,8 @@ To install the plugin with its dependencies, use the CLI:
     
 Any npm module dependencies that need to be installed will be placed in a `node_modules` folder inside the project folder.
 
+NOTE: `npm@3+` is required for the dependency resolution to work; using `npm@2` or below will result in errors in resolving dependencies and will cause build failure.
+
 # Usage
 
 The hook scripts included in this plugin are run after each platform `prepare` operation and apply preferences dictated by custom keys in the project `config.xml` file to the relevant platform config files.
