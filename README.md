@@ -1,5 +1,6 @@
-cordova-custom-config plugin
+cordova-custom-config plugin [![Build Status](https://travis-ci.org/dpa99c/cordova-custom-config-example.png)](https://travis-ci.org/dpa99c/cordova-custom-config-example) [![Latest Stable Version](https://img.shields.io/npm/v/cordova-custom-config.svg)](https://www.npmjs.com/package/cordova-custom-config) [![Total Downloads](https://img.shields.io/npm/dt/cordova-custom-config.svg)](https://npm-stat.com/charts.html?package=cordova-custom-config)
 ============================
+
 
 <!-- START table-of-contents -->
 **Table of Contents**
