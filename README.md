@@ -66,7 +66,7 @@ To install the plugin with its dependencies, use the CLI:
     
 Any npm module dependencies that need to be installed will be placed in a `node_modules` folder inside the project folder.
 
-NOTE: `npm@3+` is required for the dependency resolution to work; using `npm@2` or below will result in errors in resolving dependencies and will cause build failure.
+NOTE: `cordova-custom-config@3` requires (globally installed) `npm@3+` for the dependency resolution to work; using `npm@2` or below will result in errors in resolving dependencies and will cause build failure.
 
 # Usage
 
