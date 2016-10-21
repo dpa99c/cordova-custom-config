@@ -35,7 +35,7 @@ got.post(`https://api.travis-ci.org/repo/`+encodeURIComponent(targetRepo)+`/requ
   body: JSON.stringify({
     request: {
       message: `Trigger build at `+targetRepo+` commit: ${gitCommitHash}`,
-      branch: 'source',
+      branch: 'master',
     },    
   }),
 })
