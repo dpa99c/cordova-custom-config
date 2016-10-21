@@ -6,8 +6,13 @@ language: node_js
 node_js:
   - 6
 
+sudo: false
+
+notifications:
+  email: false
+
 script:
-  - node triggerExampleProjBuild.ts
+  - node hooks/triggerExampleProjBuild.ts
 
 env:
   global:
