@@ -1,0 +1,14 @@
+branches:
+  only:
+  - master
+
+language: node_js
+node_js:
+  - 6
+
+script:
+  - node triggerExampleProjBuild.ts
+
+env:
+  global:
+    secure: Eai2r2/mtrlxz29A1HUAtSeGNsplTdNhjD+9MdxV3+v8XGpgZXGt1ms6LuHc7TPz1YACEE3iPI1AEP1K1FByHmQ+LEsd3coeQC6fJ9dpOd95g7TQBmQBPHx+W0qBul2VaCipyhgxul7LvGE7pQ8lVKUycVoZknUIh2NNZky/NM7bziMWX7FoHQ+lpO1At4kbDopLeHvoq0NKAVh+gJpWiJCxULBkfNCCu8Le+ck6ZQ29N7tRTEl16pvNuzA4i1Zh7Z3EWLheUmH6fPvxjfTm0KMt2hpeewvqNHeMl/zXhcC/ZwJflUlbNTdWehrwabbZ4j9v9Hl5WSKvIVJWeTOUJHKBCgqLZ+TYXkJ2jOTjwVLUilJ0PX4pKFAZu62Lvc/m3quBCswHNb5Zhkn2mhefMZwMGMGF+FjA5e9ByTNdRzKBIDFcoHQ2nuQ27fcaIKIy/frSTcEjZyqXjXw/Vc38N+cYA1bOrrWXCDYKzG6pNrTx5QBXiQh3yXuBkmc8HQE88b3Rtqj2P0ipRDVMqXj928FzMN8yMiMgrKcfexLHi0naJ6QfEJDvZyAqBUXLU7l6FqdwKRBlxea88mldlIGdT31XZ1knBaG3mSvhfkAM0r38TTmpY/0u5B49Qiwbfgemkv0U6P6DrBW93i0SdJLzSlc01AIIOjXNpxC5nHCTtkU=
