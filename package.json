@@ -38,7 +38,8 @@
         "tostr": "^0.1.0"
     },
     "devDependencies": {
-        "jshint": "^2.6.0"
+        "jshint": "^2.6.0",
+        "got": "^6.5.0"
     },
     "scripts": {
         "test": "jshint hooks"
