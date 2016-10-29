@@ -42,7 +42,6 @@
         "got": "^6.5.0"
     },
     "scripts": {
-        "test": "jshint hooks",
-        "preinstall": "npm install check-node-version && check-node-version --npm \">=3\""
+        "test": "jshint hooks"
     }
 }
