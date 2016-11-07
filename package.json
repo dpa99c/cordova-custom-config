@@ -1,5 +1,5 @@
 {
-    "version": "3.0.13",
+    "version": "3.0.14",
     "name": "cordova-custom-config",
     "cordova_name": "cordova-custom-config",
     "description": "Cordova/Phonegap plugin to update platform configuration files based on preferences and config-file data defined in config.xml.",
@@ -42,7 +42,6 @@
         "got": "^6.5.0"
     },
     "scripts": {
-        "test": "jshint hooks",
-        "preinstall": "npm install check-node-version && check-node-version --npm \">=3\""
+        "test": "jshint hooks"
     }
 }
