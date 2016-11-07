@@ -203,16 +203,14 @@ For example:
 
 will replace the existing `<application>` element(s).
     
-- To force the preservation (rather than replacement) of existing child elements, you can use the `add="true"` attribute.
+To force the preservation (rather than replacement) of existing child elements, you can use the `add="true"` attribute.
 So for the example above:
-
 
     <config-file target="AndroidManifest.xml" add="true">
         <application android:name="MyApp" />
     </config-file>
 
-        
-will preserve the existing `<application>` element(s).     
+will preserve the existing `<application>` element(s).
 
 
 ### Android example
