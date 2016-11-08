@@ -680,6 +680,14 @@ var applyCustomConfig = (function(){
                     ensureBackup(targetFilePath, platform, targetFileName);
                     updateIosPbxProj(targetFilePath, configItems);
                     updateXCConfigs(configItems, platformPath);
+                }else if (targetFileName.indexOf("Entitlements-Release.plist") > -1) {
+                    targetFilePath = path.join(platformPath, projectName, targetFileName);
+                    ensureBackup(targetFilePath, platform, targetFileName);
+                    updateIosPlist(targetFilePath, configItems);
+                }else if (targetFileName.indexOf("Entitlements-Debug.plist") > -1) {
+                    targetFilePath = path.join(platformPath, projectName, targetFileName);
+                    ensureBackup(targetFilePath, platform, targetFileName);
+                    updateIosPlist(targetFilePath, configItems);
                 }
 
             } else if (platform === 'android' && targetFileName === 'AndroidManifest.xml') {
