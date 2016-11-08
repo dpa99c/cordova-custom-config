@@ -30,7 +30,9 @@ var restoreBackups = (function(){
             "build.xcconfig": "cordova/build.xcconfig",
             "build-extras.xcconfig": "cordova/build-extras.xcconfig",
             "build-debug.xcconfig": "cordova/build-debug.xcconfig",
-            "build-release.xcconfig": "cordova/build-release.xcconfig"
+            "build-release.xcconfig": "cordova/build-release.xcconfig",
+            "Entitlements-Release.plist": "{projectName}/Entitlements-Release.plist",
+            "Entitlements-Debug.plist": "{projectName}/Entitlements-Debug.plist"
         },
         "android":{
             "AndroidManifest.xml": "AndroidManifest.xml"
