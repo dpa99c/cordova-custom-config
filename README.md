@@ -123,6 +123,8 @@ For a list of possible manifest values see [http://developer.android.com/guide/t
 
 ### Android preferences
 
+Note: [cordova@6.4.0](https://cordova.apache.org/news/2016/10/25/tools-release.html) adds support for [`<edit-config>`](http://cordova.apache.org/docs/en/6.x/plugin_ref/spec.html#edit-config) blocks in `config.xml`, which enables you to achieve similar manipulation of Android preferences without needing this plugin.
+
 - `<preference>` elements in `config.xml` are used to set set attributes on existing elements in the `AndroidManifest.xml`.
     - e.g. `<preference name="android-manifest/@android:hardwareAccelerated" value="false" />`
     - will result in `AndroidManifest.xml`: `<manifest android:hardwareAccelerated="false">`
