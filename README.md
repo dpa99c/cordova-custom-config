@@ -1,8 +1,11 @@
+
+
 cordova-custom-config plugin [![Build Status](https://travis-ci.org/dpa99c/cordova-custom-config-example.png)](https://travis-ci.org/dpa99c/cordova-custom-config-example) [![Latest Stable Version](https://img.shields.io/npm/v/cordova-custom-config.svg)](https://www.npmjs.com/package/cordova-custom-config) [![Total Downloads](https://img.shields.io/npm/dt/cordova-custom-config.svg)](https://npm-stat.com/charts.html?package=cordova-custom-config)
 ============================
 
 
-<!-- START table-of-contents -->
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**
 
 - [Overview](#overview)
@@ -15,10 +18,14 @@ cordova-custom-config plugin [![Build Status](https://travis-ci.org/dpa99c/cordo
   - [Config blocks](#config-blocks)
   - [Android](#android)
     - [Android preferences](#android-preferences)
+      - [Android namespace attribute](#android-namespace-attribute)
+      - [XPath preferences](#xpath-preferences)
     - [Android config blocks](#android-config-blocks)
     - [Android example](#android-example)
   - [iOS](#ios)
     - [iOS preferences](#ios-preferences)
+      - [XCBuildConfiguration](#xcbuildconfiguration)
+      - [xcodefunc](#xcodefunc)
     - [iOS config blocks](#ios-config-blocks)
     - [iOS example](#ios-example)
   - [Plugin preferences](#plugin-preferences)
@@ -28,7 +35,7 @@ cordova-custom-config plugin [![Build Status](https://travis-ci.org/dpa99c/cordo
 - [Credits](#credits)
 - [License](#license)
 
-<!-- END table-of-contents -->
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 # Overview
 
@@ -265,18 +272,22 @@ config.xml:
 
 ## iOS
 
-- The plugin currently supports custom configuration of the project plist (`*-Info.plist`) using config blocks, and project settings (`project.pbxproj`) using preference elements.
+- The plugin currently supports custom configuration of:
+    - the project plist (`*-Info.plist`) using config blocks
+    - build settings using preference elements
 - All iOS-specific config should be placed inside the `<platform name="ios">` in `config.xml`.
 
 ### iOS preferences
 
-- `<preference>` elements are used to set preferences in the project settings file `platforms/ios/{PROJECT_NAME}/{PROJECT_NAME}.xcodeproj/project.pbxproj`
-- Preferences should be defined in the format `<preference name="ios-SOME_BLOCK_TYPE-SOME_KEY" value="SOME_VALUE" />`
-    - e.g.  `<preference name="ios-XCBuildConfiguration-ENABLE_BITCODE" value="NO" />`
+- Preferences for iOS can be used to define build configuration settings
+- The plugin currently supports:
+    - setting of `XCBuildConfiguration` block keys in the `project.pbxproj` file
+    - `xcodefunc` as an interface to apply functions from [node-xcode](https://github.com/alunny/node-xcode)
 
-#### Build Configuration preferences
+#### XCBuildConfiguration
 
-- Currently, `XCBuildConfiguration` is the only supported block type in the `project.pbxproj`.
+- XCBuildConfiguration `<preference>` elements are used to set preferences in the project settings file `platforms/ios/{PROJECT_NAME}/{PROJECT_NAME}.xcodeproj/project.pbxproj`
+- Currently, `XCBuildConfiguration` is the only supported block type.
 - However, there is no constraint on the list of keys for which values may be set.
 - If an entry already exists in an `XCBuildConfiguration` block for the specified key, the existing value will be overwritten with the specified value.
 - If no entry exists in any `XCBuildConfiguration` block for the specified key, a new key entry will be created in each `XCBuildConfiguration` block with the specified value.
@@ -295,6 +306,10 @@ config.xml:
     - e.g. `<preference name="ios-XCBuildConfiguration-IPHONEOS_DEPLOYMENT_TARGET" value="7.0" buildType="release" quote="none" />`
     - will appear in `project.pbxproj` as: `IPHONEOS_DEPLOYMENT_TARGET = 7.0;`
 
+- Preferences should be defined in the format `<preference name="ios-SOME_BLOCK_TYPE-SOME_KEY" value="SOME_VALUE" />`
+- Therefore, the preference name should be prefixed with `ios-XCBuildConfiguration`, for example:
+
+    <preference name="ios-XCBuildConfiguration-ENABLE_BITCODE" value="YES" />
 
 ##### .xcconfig files
 
@@ -313,7 +328,7 @@ This will append it to the corresponding .xcconfig` file.
 - Auto-restore of the backups can be disabled by setting `<preference name="cordova-custom-config-autorestore" value="false" />` in the `config.xml`.
 - Preference names and values will not be quote-escaped in `.xcconfig` files, so the `quote` attribute has no effect on them.
 
-###### CODE\_SIGN\_IDENTITY preferences
+##### CODE\_SIGN\_IDENTITY preferences
 
 - Cordova places its default CODE\_SIGN\_IDENTITY for Release builds in `build-release.xcconfig` but for Debug builds in `build.xcconfig.
 - If you set a CODE\_SIGN\_IDENTITY preference in the `config.xml` with `buildType="release"`, the plugin will overwrite the defaults in `build-release.xcconfig`.
@@ -325,6 +340,34 @@ This will append it to the corresponding .xcconfig` file.
 - You can force the plugin to add a new entry for CODE\_SIGN\_IDENTITY preference with `buildType="debug"` to `build-debug.xcconfig`, rather than overwriting the defaults in `build.xcconfig` by setting `xcconfigEnforce="true"`.
 This will still override the defaults in `build.xcconfig`, because `build-debug.xcconfig` overrides `build.xcconfig`.
     - e.g. `<preference name="ios-XCBuildConfiguration-CODE\_SIGN\_IDENTITY" value="iPhone Distribution: My Debug Profile (A1B2C3D4)" buildType="debug" xcconfigEnforce="true" />`
+
+#### xcodefunc
+
+- `xcode-func` preferences enable functions within [node-xcode](https://github.com/alunny/node-xcode) to be called to edit different block types (such as Sources, Resources or Frameworks) in the `project.pbxproj`.
+- The preference name should be `ios-xcodefunc`, i.e. `name="ios-xcodefunc"`
+- The function to call in [node-xcode](https://github.com/alunny/node-xcode) should be specified using the `func` attribute, e.g. `func="addResourceFile"`
+- Function arguments should be specified using `<arg />` child elements. It supports the following attributes:
+    - `value`-  the value of the argument, e.g. `value="../../src/content/image.png"`
+    - `type` - the type of the value, e.g. `type="String"`.
+        - Supported types are:
+            - `Null` - evaluates to `null`
+            - `Undefined` - evaluates to `undefined`
+            - `Object` - a stringified JSON object that will be parsed back into its object form
+            - `Number` - a Javascript Number
+            - `String` - a Javascript String
+            - `Symbol` - a Javascript Symbol
+        - If `type` is not specified, the argument value will be passed exactly as defined in the `value` attribute
+    - `flag` - a modifier for specific types of argument, e.g. `flag="path"`
+        - Currently, the only supported value is `path` which forces the path to be resolved either as an absolute path or relative to `platforms/ios/`.
+
+For example:
+
+    <preference name="ios-xcodefunc" func="addResourceFile">
+        <arg type="String" value="../../src/content/image.png" flag="path" />
+    </preference>
+
+will add resource `image.png` from `../../src/content` relative to `platforms/ios/`, i.e. `./src/content/image.png`
+
 
 ### iOS config blocks
 
