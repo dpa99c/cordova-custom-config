@@ -1,6 +1,10 @@
 #!/usr/bin/env node
 "use strict";
 
+declare var require: any;
+declare var __dirname: any;
+declare var process: any;
+
 const shell = require('shelljs'),
   path = require('path'),
   got = require('got');
