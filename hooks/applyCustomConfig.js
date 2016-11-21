@@ -481,7 +481,7 @@ var applyCustomConfig = (function(){
               value = "";
             }
             infoPlist[key] = value;
-            logger.verbose("Write to plist; key="+key+"; value="+tostr(configPlistObj[key]));
+            logger.verbose("Write to plist; key="+key+"; value="+tostr(value));
         });
 
         tempInfoPlist = plist.build(infoPlist);
