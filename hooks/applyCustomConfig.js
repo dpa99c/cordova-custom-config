@@ -480,8 +480,11 @@ var applyCustomConfig = (function(){
             if (!value && item.data.tag === "string") {
               value = "";
             }
-            infoPlist[key] = value;
-            logger.verbose("Write to plist; key="+key+"; value="+tostr(value));
+            if (item.data.tag === "array") {
+              infoPlist[key] = Object.assign({}, infoPlist[key], value)
+            } else {
+              infoPlist[key] = value;
+            }
         });
 
         tempInfoPlist = plist.build(infoPlist);
