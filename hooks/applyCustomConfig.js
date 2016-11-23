@@ -770,7 +770,6 @@ var applyCustomConfig = (function(){
             tostr = require('tostr'),
             fileUtils = require(path.resolve(hooksPath, "fileUtils.js"))(ctx);
         logger.verbose("Loaded module dependencies");
-        applyCustomConfig.init(ctx);
     };
 
     applyCustomConfig.init = function(ctx){
@@ -816,11 +815,32 @@ module.exports = function(ctx) {
 
     hooksPath = path.resolve(ctx.opts.projectRoot, "plugins", ctx.opts.plugin.id, "hooks");
     logger = require(path.resolve(hooksPath, "logger.js"))(ctx);
+
     logger.verbose("Running applyCustomConfig.js");
+
+    var init = function(){
+        applyCustomConfig.init(ctx);
+    };
+
+    var depsLoaded = false;
     try{
         applyCustomConfig.loadDependencies(ctx);
+        depsLoaded = true;
     }catch(e){
-        logger.error("Error loading dependencies ("+e.message+")");
+        logger.warn("Error loading dependencies ("+e.message+") - attempting to resolve");
+    }
+
+    if(depsLoaded){
+        init();
+    }else{
+        require(path.resolve(hooksPath, "resolveDependencies.js"))(ctx).then(function(){
+            try{
+                applyCustomConfig.loadDependencies(ctx);
+                init();
+            }catch(e){
+                logger.error("Failed loading dependencies ("+e.message+") - unable to resolve");
+            }
+        });
     }
 
     return deferral.promise;
