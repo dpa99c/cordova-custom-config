@@ -476,8 +476,12 @@ var applyCustomConfig = (function(){
             plistXml += eltreeToXmlString(item.data) + '</dict></plist>';
 
             var configPlistObj = plist.parse(plistXml);
-            infoPlist[key] = configPlistObj[key];
-            logger.verbose("Write to plist; key="+key+"; value="+tostr(configPlistObj[key]));
+            var value = configPlistObj[key];
+            if (!value && item.data.tag === "string") {
+              value = "";
+            }
+            infoPlist[key] = value;
+            logger.verbose("Write to plist; key="+key+"; value="+tostr(value));
         });
 
         tempInfoPlist = plist.build(infoPlist);
