@@ -521,7 +521,7 @@ var applyCustomConfig = (function(){
               value = "";
             }
             if (item.data.tag === "array") {
-              infoPlist[key] = Object.assign({}, infoPlist[key], value)
+              infoPlist[key] = Object.assign({}, infoPlist[key], value);
             } else {
               infoPlist[key] = value;
             }
