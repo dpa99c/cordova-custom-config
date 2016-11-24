@@ -447,15 +447,61 @@ var applyCustomConfig = (function(){
 
                 logger.debug("**CONFIG-FILE");
                 //logger.dump(item);
+                logger.debug("childSelector: " + childSelector);
 
                 var multiple = isAllowedMultiple(childSelector, item.parent);
                 logger.debug("isAllowedMultiple: "+ !!multiple);
+
+
+                var copyDataToElement = function(el){
+                    // copy all config.xml data except for the generated _id property
+                    _.each(data, function (prop, propName) {
+                        if(propName !== '_id') {
+                            el[propName] = prop;
+                        }
+                    });
+                };
+
                 if(multiple){
-                    childSelector += "[@android:"+multiple.uniqueBy+"='" + data.attrib["android:"+multiple.uniqueBy] + "']";
+                    var uniqueSelector = childSelector + "[@android:"+multiple.uniqueBy+"='" + data.attrib["android:"+multiple.uniqueBy] + "']";
+                    childEl = parentEl.find(uniqueSelector);
+
+                    // if child el is not found by unique selector, compare child contents
+                    if(!childEl){
+                        var similarEls = parentEl.findall(childSelector);
+                        if(similarEls){
+                            var targetEl = new et.Element(item.destination);
+                            copyDataToElement(targetEl);
+
+                            var compareEls; compareEls = function(el1, el2){
+
+                                if(el1.tag !== el2.tag) return false;
+                                if(el1.text !== el2.text) return false;
+                                for(var name in el1.attrib){
+                                    if(!el2.attrib[name] || el1.attrib[name] !== el2.attrib[name]) return false;
+                                }
+                                if(el1._children.length !== el2._children.length) return false;
+                                if(el1._children.length > 0){
+                                    for(var i=0; i<el1._children.length; i++){
+                                        if(compareEls(el1._children[i], el2._children[i]) === false){
+                                            return false;
+                                        }
+                                    }
+                                }
+                                return true;
+                            };
+                            similarEls.forEach(function(similarEl){
+                                if(compareEls(targetEl, similarEl) === true){
+                                    childEl = similarEl;
+                                    return false;
+                                }
+                            });
+                        }
+                    }
+                }else{
+                    childEl = parentEl.find(childSelector);
                 }
 
-                logger.debug("childSelector: " + childSelector);
-                childEl = parentEl.find(childSelector);
                 logger.debug("**childEl"); //logger.dump(childEl);
 
                 // if child element doesnt exist, create new element
@@ -464,12 +510,7 @@ var applyCustomConfig = (function(){
                     parentEl.append(childEl);
                 }
 
-                // copy all config.xml data except for the generated _id property
-                _.each(data, function (prop, propName) {
-                    if(propName !== '_id') {
-                        childEl[propName] = prop;
-                    }
-                });
+                copyDataToElement(childEl);
             }
         });
         fs.writeFileSync(targetFilePath, tempManifest.write({indent: 4}), 'utf-8');
@@ -528,12 +569,12 @@ var applyCustomConfig = (function(){
             var configPlistObj = plist.parse(plistXml);
             var value = configPlistObj[key];
             if (!value && item.data.tag === "string") {
-              value = "";
+                value = "";
             }
             if (item.data.tag === "array") {
-              infoPlist[key] = [...new Set([...infoPlist[key], ...value])];
+                infoPlist[key] = [...new Set([...infoPlist[key], ...value])];
             } else {
-              infoPlist[key] = value;
+                infoPlist[key] = value;
             }
             logger.verbose("Wrote to plist; key=" + key + "; value=" + tostr(infoPlist[key]));
         });
