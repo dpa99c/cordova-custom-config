@@ -572,7 +572,7 @@ var applyCustomConfig = (function(){
                 value = "";
             }
             if (item.data.tag === "array" && infoPlist[key]) {
-                infoPlist[key] = infoPlist[key].concat(value);
+                infoPlist[key] = infoPlist[key].concat(value).filter(onlyUnique);
             } else {
                 infoPlist[key] = value;
             }
@@ -731,6 +731,10 @@ var applyCustomConfig = (function(){
 
     function quoteEscape(value){
         return '"'+value+'"';
+    }
+
+    function onlyUnique(value, index, self){
+        return self.indexOf(value) === index;
     }
 
 
