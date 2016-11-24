@@ -420,23 +420,33 @@ var applyCustomConfig = (function(){
             }
 
             if (item.type === 'preference') {
-                logger.debug("**PREFERENCE"); logger.dump(item);
+                logger.debug("**PREFERENCE"); //logger.dump(item);
 
-                logger.debug("**parentEl"); logger.dump(parentEl);
+                logger.debug("**parentEl"); //logger.dump(parentEl);
 
                 if(data.attrib['delete'] === 'true') {
                     logger.debug("Deleting preference");
                     childEl = parentEl.find(childSelector);
-                    logger.debug("**childEl"); logger.dump(childEl);
+                    logger.debug("**childEl"); //logger.dump(childEl);
 
-                    if(childEl) parentEl.remove(childEl);
+                    if(childEl) {
+                        parentEl.remove(childEl);
+                        logger.debug("Deleted preference from parent");
+                    } else {
+                        childEl = root.find('*/' + childSelector);
+
+                        if (childEl) {
+                            root.remove(childEl);
+                            logger.debug("Deleted preference from root");
+                        }
+                    }
                 } else {
                     parentEl.attrib[childSelector.replace("@",'')] = data.attrib['value'];
                 }
             } else { // item.type === 'configFile'
 
                 logger.debug("**CONFIG-FILE");
-                logger.dump(item);
+                //logger.dump(item);
 
                 var multiple = isAllowedMultiple(childSelector, item.parent);
                 logger.debug("isAllowedMultiple: "+ !!multiple);
@@ -446,7 +456,7 @@ var applyCustomConfig = (function(){
 
                 logger.debug("childSelector: " + childSelector);
                 childEl = parentEl.find(childSelector);
-                logger.debug("**childEl"); logger.dump(childEl);
+                logger.debug("**childEl"); //logger.dump(childEl);
 
                 // if child element doesnt exist, create new element
                 if(!childEl || item.add === 'true') {
@@ -801,7 +811,7 @@ var applyCustomConfig = (function(){
             }catch(e){
                 var msg = "Error updating config for platform '"+platform+"': "+ e.message;
                 logger.error(msg);
-                logger.dump(e);
+                //logger.dump(e);
                 if(settings.stoponerror){
                     deferral.reject(msg);
                 }
