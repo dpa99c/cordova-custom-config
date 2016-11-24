@@ -571,8 +571,8 @@ var applyCustomConfig = (function(){
             if (!value && item.data.tag === "string") {
                 value = "";
             }
-            if (item.data.tag === "array") {
-                infoPlist[key] = [...new Set([...infoPlist[key], ...value])];
+            if (item.data.tag === "array" && infoPlist[key]) {
+                infoPlist[key] = infoPlist[key].concat(value);
             } else {
                 infoPlist[key] = value;
             }
@@ -852,7 +852,7 @@ var applyCustomConfig = (function(){
             }catch(e){
                 var msg = "Error updating config for platform '"+platform+"': "+ e.message;
                 logger.error(msg);
-                //logger.dump(e);
+                logger.dump(e);
                 if(settings.stoponerror){
                     deferral.reject(msg);
                 }
