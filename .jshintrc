@@ -21,10 +21,10 @@
     "nonew"         : false,    // true: Prohibit use of constructors for side-effects (without assignment)
     "plusplus"      : false,    // true: Prohibit use of `++` & `--`
     "quotmark"      : false,    // Quotation mark consistency:
-                                //   false    : do nothing (default)
-                                //   true     : ensure whatever is used is consistent
-                                //   "single" : require single quotes
-                                //   "double" : require double quotes
+    //   false    : do nothing (default)
+    //   true     : ensure whatever is used is consistent
+    //   "single" : require single quotes
+    //   "double" : require double quotes
     "undef"         : false,     // true: Require all non-global variables to be declared (prevents global leaks)
     "unused"        : false,     // true: Require all defined variables be used
     "strict"        : false,     // true: Requires all functions run in ES5 Strict Mode
@@ -40,9 +40,10 @@
     "debug"         : false,     // true: Allow debugger statements e.g. browser breakpoints.
     "eqnull"        : true,     // true: Tolerate use of `== null`
     "es5"           : false,     // true: Allow ES5 syntax (ex: getters and setters)
+    "esversion"     : 6,
     "esnext"        : false,     // true: Allow ES.next (ES6) syntax (ex: `const`)
     "moz"           : false,     // true: Allow Mozilla specific syntax (extends and overrides esnext features)
-                                 // (ex: `for each`, multiple try/catch, function expression�)
+    // (ex: `for each`, multiple try/catch, function expression�)
     "evil"          : true,     // true: Tolerate use of `eval` and `new Function()`
     "expr"          : true,     // true: Tolerate `ExpressionStatement` as Programs
     "funcscope"     : true,     // true: Tolerate defining variables inside control statements
