@@ -274,8 +274,22 @@ config.xml:
 
 #### Build Configuration preferences
 
-- Currently, `XCBuildConfiguration` is the only supported block type in the `project.pbxproj`.
-- However, there is no constraint on the list of keys for which values may be set.
+Currently, `XCBuildConfiguration` and `xcodefunc` are the only supported block types in the `project.pbxproj`.
+
+##### xcodefunc
+
+- It is not a special block, it is an opportunity to apply [node-xcode](https://github.com/alunny/node-xcode) functions to edit different block types (such as Sources, Resources or Frameworks) in the `project.pbxproj`.
+    - e.g.:
+
+        `<preference name="ios-xcodefunc" func="addResourceFile">
+            <arg type="String" value="../../src/content/image.png" flag="path" />
+        </preference>`
+    - will add resource image.png from `../../src/content`
+        
+
+##### XCBuildConfiguration
+
+- There is no constraint on the list of keys for which values may be set.
 - If an entry already exists in an `XCBuildConfiguration` block for the specified key, the existing value will be overwritten with the specified value.
 - If no entry exists in any `XCBuildConfiguration` block for the specified key, a new key entry will be created in each `XCBuildConfiguration` block with the specified value.
 - By default, values will be applied to both "Release" and "Debug" `XCBuildConfiguration` blocks.

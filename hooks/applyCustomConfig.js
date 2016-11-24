@@ -242,6 +242,46 @@ var applyCustomConfig = (function(){
                 if(preference.attrib.quote){
                     prefData["quote"] = preference.attrib.quote;
                 }
+                if(preference.attrib.func){
+                    prefData["func"] = preference.attrib.func;
+                    prefData["args"] = [];
+                    _.each(preference.getchildren(), function (arg) {
+                        if (arg.tag === "arg") {
+                            var value;
+                            switch (arg.attrib.type) {
+                                case "Null":
+                                    value = null;
+                                    break;
+                                case "Undefined":
+                                    value = undefined;
+                                    break;
+                                case "Object":
+                                    value = JSON.parse(arg.attrib.value);
+                                    break;
+                                case "Number":
+                                    value = Number(arg.attrib.value);
+                                    break;
+                                case "String":
+                                    value = String(arg.attrib.value);
+                                    break;
+                                case "Symbol":
+                                    value = Symbol(arg.attrib.value);
+                                    break;
+                                default:
+                                    value = arg.attrib.value;
+                                    break;
+                            }
+                            if (arg.attrib.flag !== undefined) {
+                                switch (arg.attrib.flag) {
+                                    case "path":
+                                        value = path.isAbsolute(value) ? value : path.join("../../../../", value);
+                                        break;
+                                }
+                            }
+                            prefData["args"].push(value);
+                        }
+                    });
+                }
 
                 prefData["xcconfigEnforce"] = preference.attrib.xcconfigEnforce ? preference.attrib.xcconfigEnforce : null;
 
@@ -517,6 +557,11 @@ var applyCustomConfig = (function(){
                             var replaced = updateXCBuildConfiguration(item, buildConfig, "replace");
                             if(!replaced){
                                 updateXCBuildConfiguration(item, buildConfig, "add");
+                            }
+                            break;
+                        case "xcodefunc":
+                            if (typeof (xcodeProject[item.func]) === "function") {
+                                xcodeProject[item.func].apply(xcodeProject, item.args);
                             }
                             break;
                     }
