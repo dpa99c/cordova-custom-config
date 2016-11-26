@@ -66,13 +66,15 @@ If you are using another cloud-based Cordova/Phonegap build service and find thi
 
 # Installation
 
-To install the plugin with its dependencies, use the CLI:
+The preferred method for installing the plugin is via [`cordova-fetch` feature](https://cordova.apache.org/news/2016/05/24/tools-release.html), added in `cordova@6.2.0`, which is used to resolve the dependencies for this plugin.
 
-    $ cordova plugin add cordova-custom-config --save
-    $ phonegap plugin add cordova-custom-config --save
+To install the plugin with its dependencies, use the `--fetch` argument:
+
+    $ cordova plugin add cordova-custom-config --fetch --save
+    $ phonegap plugin add cordova-custom-config --fetch --save
+
+Any modules that need to be installed will be placed in a `node_modules` folder inside the project folder.
     
-Any npm module dependencies that need to be installed will be placed in a `node_modules` folder inside the project folder.
-
 NOTE: `cordova-custom-config@3` requires (globally installed) `npm@3+` for the dependency resolution to work; using `npm@2` or below will result in errors in resolving dependencies and will cause build failure.
 
 # Usage
