@@ -212,10 +212,10 @@ For example:
 
 will replace the existing `<application>` element(s).
     
-To force the preservation (rather than replacement) of existing child elements, you can use the `add="true"` attribute.
+To force the preservation (rather than replacement) of existing child elements, you can use the `mode="add"` attribute.
 So for the example above:
 
-    <config-file target="AndroidManifest.xml" add="true">
+    <config-file target="AndroidManifest.xml" mode="add">
         <application android:name="MyApp" />
     </config-file>
 
@@ -265,7 +265,7 @@ config.xml:
         </config-file>
         
         <!-- Add (rather than overwrite) a config-file block -->
-        <config-file target="AndroidManifest.xml" parent="./" add="true">
+        <config-file target="AndroidManifest.xml" parent="./" mode="add">
             <application android:name="customApplication"></application>
         </config-file>
     </platform>
@@ -387,6 +387,79 @@ will add resource `image.png` from `../../src/content` relative to `platforms/io
 
         `<key>NSLocationAlwaysUsageDescription</key>
         <string>This app requires constant access to your location in order to track your position, even when the screen is off.</string>`
+- if the .plist value type is an array, by default the values in the `<config-file>` block will be merged with any existing values.
+    - For example, if the plist already contains:
+
+        `<key>LSApplicationQueriesSchemes</key>
+        <array>
+            <string>fbapi</string>
+            <string>fb-messenger-api</string>
+        </array>`
+
+    - Then adding the `<config-file>` block:
+
+        `<config-file parent="LSApplicationQueriesSchemes" target="*-Info.plist">
+             <array>
+                 <string>myapp</string>
+                 <string>myapp2</string>
+             </array>
+        </config-file>`
+
+    - will result in the plist file as:
+
+        `<key>LSApplicationQueriesSchemes</key>
+        <array>
+            <string>fbapi</string>
+            <string>fb-messenger-api</string>
+            <string>myapp</string>
+             <string>myapp2</string>
+        </array>`
+
+- this behaviour can also be explicitly specified by adding `mode="merge"` to the `<config-file>` block:
+  - For example, the `<config-file>` block:
+
+          `<config-file parent="LSApplicationQueriesSchemes" target="*-Info.plist" mode="replace">
+               <array>
+                   <string>myapp</string>
+                   <string>myapp2</string>
+               </array>
+          </config-file>`
+
+      - will also result in the plist file as:
+
+          `<key>LSApplicationQueriesSchemes</key>
+          <array>
+              <string>fbapi</string>
+              <string>fb-messenger-api</string>
+              <string>myapp</string>
+               <string>myapp2</string>
+          </array>`
+
+- to replace existing values with those in the `<config-file>` block, use the attribute `mode="replace"`:
+     - For example, if the plist already contains:
+
+        `<key>LSApplicationQueriesSchemes</key>
+        <array>
+            <string>fbapi</string>
+            <string>fb-messenger-api</string>
+        </array>`
+
+    - Then adding the `<config-file>` block:
+
+        `<config-file parent="LSApplicationQueriesSchemes" target="*-Info.plist" mode="replace">
+             <array>
+                 <string>myapp</string>
+                 <string>myapp2</string>
+             </array>
+        </config-file>`
+
+      - will result in the plist file as:
+
+          `<key>LSApplicationQueriesSchemes</key>
+          <array>
+              <string>myapp</string>
+               <string>myapp2</string>
+          </array>`
 
 ### iOS example
 
@@ -409,21 +482,30 @@ config.xml:
         <preference name="ios-XCBuildConfiguration-CODE\_SIGN\_IDENTITY[sdk=iphoneos*]" value="iPhone Distribution: Working Edge Ltd (556F3DRHUD)" buildType="release" />
         <preference name="ios-XCBuildConfiguration-CODE\_SIGN\_IDENTITY[sdk=iphoneos9.1]" value="iPhone Distribution: Working Edge Ltd (556F3DRHUD)" buildType="release" />
 
-        <!-- Set orientation on iPhone -->
-        <config-file platform="ios" target="*-Info.plist" parent="UISupportedInterfaceOrientations">
-            <array>
-                <string>UIInterfaceOrientationPortrait</string>
-                <string>UIInterfaceOrientationPortraitUpsideDown</string>
-            </array>
-        </config-file>
+       <!-- By default, merge with existing array values -->
+       <config-file parent="LSApplicationQueriesSchemes" target="*-Info.plist">
+           <array>
+               <string>myapp</string>
+               <string>myapp2</string>
+               <string>myapp3</string>
+           </array>
+       </config-file>
 
-        <!-- Set orientation on iPad -->
-        <config-file platform="ios" target="*-Info.plist" parent="UISupportedInterfaceOrientations~ipad">
-            <array>
-                <string>UIInterfaceOrientationPortrait</string>
-                <string>UIInterfaceOrientationPortraitUpsideDown</string>
-            </array>
-        </config-file>
+       <!-- Explicitly merge with existing array values -->
+       <config-file platform="ios" target="*-Info.plist" parent="UISupportedInterfaceOrientations" mode="merge" >
+           <array>
+               <string>UIInterfaceOrientationPortrait</string>
+               <string>UIInterfaceOrientationPortraitUpsideDown</string>
+           </array>
+       </config-file>
+
+       <!-- Replace existing values -->
+       <config-file platform="ios" target="*-Info.plist" parent="UISupportedInterfaceOrientations~ipad" mode="replace">
+           <array>
+               <string>UIInterfaceOrientationPortrait</string>
+               <string>UIInterfaceOrientationPortraitUpsideDown</string>
+           </array>
+       </config-file>
 
         <!-- Set background location mode -->
         <config-file platform="ios" target="*-Info.plist" parent="UIBackgroundModes">
