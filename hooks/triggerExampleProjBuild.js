@@ -25,17 +25,17 @@ console.log("Git commit: ${gitCommitHash}");
 
 console.log('Calling Travis...');
 
-got.post("https://api.travis-ci.org/repo/"+encodeURIComponent(targetRepo)+"/requests", {
+got.post("https://api.travis-ci.org/repo/"+targetRepo+"/requests", {
   headers: {
     "Content-Type": "application/json",
     "Accept": "application/json",
     "Travis-API-Version": "3",
-    "Authorization": "token ${process.env.TRAVIS_API_TOKEN}",
+    "Authorization": "token ${process.env.TRAVIS_API_TOKEN}"
   },
   body: JSON.stringify({
     request: {
       message: "Trigger build at "+targetRepo+" commit: ${gitCommitHash}",
-      branch: 'master',
+      branch: 'master'
     }
   })
 })
