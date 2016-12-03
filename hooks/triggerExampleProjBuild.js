@@ -5,21 +5,21 @@ var shell = require('shelljs');
 var path = require('path');
 var got = require('got');
 
-const targetRepo = 'dpa99c/cordova-custom-config-example';
+var targetRepo = 'dpa99c/cordova-custom-config-example';
 
 console.log("Fetching Git commit hash...");
 
-const gitCommitRet = shell.exec('git rev-parse HEAD', {
+var gitCommitRet = shell.exec('git rev-parse HEAD', {
   cwd: path.join(__dirname, '..')
 });
 
 if (0 !== gitCommitRet.code) {
   console.error('Error getting git commit hash');
-  
+
   process.exit(-1);
 }
 
-const gitCommitHash = gitCommitRet.stdout.trim();
+var gitCommitHash = gitCommitRet.stdout.trim();
 
 console.log("Git commit: ${gitCommitHash}");
 
@@ -42,9 +42,8 @@ got.post("https://api.travis-ci.org/repo/"+encodeURIComponent(targetRepo)+"/requ
 .then(function(){
   console.log("Triggered build of "+targetRepo);
 })
-.catch(function(){
+.catch(function(err){
   console.error(err);
-  
   process.exit(-1);
 });
 
