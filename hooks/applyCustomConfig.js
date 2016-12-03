@@ -283,7 +283,7 @@ var applyCustomConfig = (function(){
                             if (arg.attrib.flag !== undefined) {
                                 switch (arg.attrib.flag) {
                                     case "path":
-                                        value = path.isAbsolute(value) ? value : path.join("../../../../", value);
+                                        value = path.isAbsolute(value) ? value : path.join("../../", value);
                                         break;
                                 }
                             }

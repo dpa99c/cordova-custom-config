@@ -349,7 +349,7 @@ This will still override the defaults in `build.xcconfig`, because `build-debug.
 - The preference name should be `ios-xcodefunc`, i.e. `name="ios-xcodefunc"`
 - The function to call in [node-xcode](https://github.com/alunny/node-xcode) should be specified using the `func` attribute, e.g. `func="addResourceFile"`
 - Function arguments should be specified using `<arg />` child elements. It supports the following attributes:
-    - `value`-  the value of the argument, e.g. `value="../../src/content/image.png"`
+    - `value`-  the value of the argument, e.g. `value="src/content/image.png"`
     - `type` - the type of the value, e.g. `type="String"`.
         - Supported types are:
             - `Null` - evaluates to `null`
@@ -360,15 +360,15 @@ This will still override the defaults in `build.xcconfig`, because `build-debug.
             - `Symbol` - a Javascript Symbol
         - If `type` is not specified, the argument value will be passed exactly as defined in the `value` attribute
     - `flag` - a modifier for specific types of argument, e.g. `flag="path"`
-        - Currently, the only supported value is `path` which forces the path to be resolved either as an absolute path or relative to `platforms/ios/`.
+        - Currently, the only supported value is `path` which forces the path to be resolved either as an absolute path or relative to the project root.
 
 For example:
 
     <preference name="ios-xcodefunc" func="addResourceFile">
-        <arg type="String" value="../../src/content/image.png" flag="path" />
+        <arg type="String" value="src/content/image.png" flag="path" />
     </preference>
 
-will add resource `image.png` from `../../src/content` relative to `platforms/ios/`, i.e. `./src/content/image.png`
+will add resource `image.png` from `./src/content` (i.e. `../../src/content/image.png` relative to `./platforms/ios/`)
 
 
 ### iOS config blocks
@@ -483,6 +483,11 @@ config.xml:
         <preference name="ios-XCBuildConfiguration-CODE\_SIGN\_IDENTITY" value="iPhone Distribution: Working Edge Ltd (556F3DRHUD)" buildType="release" xcconfigEnforce="false" />
         <preference name="ios-XCBuildConfiguration-CODE\_SIGN\_IDENTITY[sdk=iphoneos*]" value="iPhone Distribution: Working Edge Ltd (556F3DRHUD)" buildType="release" />
         <preference name="ios-XCBuildConfiguration-CODE\_SIGN\_IDENTITY[sdk=iphoneos9.1]" value="iPhone Distribution: Working Edge Ltd (556F3DRHUD)" buildType="release" />
+
+        <!-- Add resource file by relative path -->
+        <preference name="ios-xcodefunc" func="addResourceFile">
+            <arg type="String" value="src/content/image.png" flag="path" />
+        </preference>
 
        <!-- By default, merge with existing array values -->
        <config-file parent="LSApplicationQueriesSchemes" target="*-Info.plist">
