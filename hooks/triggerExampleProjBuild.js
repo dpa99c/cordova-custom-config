@@ -25,7 +25,7 @@ console.log("Git commit: ${gitCommitHash}");
 
 console.log('Calling Travis...');
 
-got.post("https://api.travis-ci.org/repo/"+targetRepo+"/requests", {
+got.post("https://api.travis-ci.org/repo/"+encodeURIComponent(targetRepo)+"/requests", {
   headers: {
     "Content-Type": "application/json",
     "Accept": "application/json",
