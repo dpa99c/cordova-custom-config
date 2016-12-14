@@ -25,7 +25,7 @@ var logger = (function(){
             context = ctx;
         },
         dump: function (obj){
-            if(context.cmdLine.match("--debug")) {
+            if(context.cmdLine.match("--debug") || context.cmdLine.match("--dump")) {
                 console.log("DUMP: "+require('util').inspect(obj));
             }
         },

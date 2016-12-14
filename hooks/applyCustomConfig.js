@@ -192,13 +192,22 @@ var applyCustomConfig = (function(){
     function getConfigFilesByTargetAndParent(platform) {
         var configFileData = configXml.findall('platform[@name=\'' + platform + '\']/config-file');
         var result = keyBy(configFileData, function(item) {
-            var parent = item.attrib.parent,
-                add = item.attrib.add;
+            var parent = item.attrib.parent;
+
+            var mode;
+            if (item.attrib.add){
+                logger.warn("add=\"true\" is deprecated. Change to mode=\"add\".");
+                mode = "add";
+            }
+            if (item.attrib.mode){
+                mode = item.attrib.mode;
+            }
+
             //if parent attribute is undefined /* or */, set parent to top level elementree selector
             if(!parent || parent === '/*' || parent === '*/') {
                 parent = './';
             }
-            return item.attrib.target + '|' + parent + '|' + add;
+            return item.attrib.target + '|' + parent + '|' + mode;
         });
         return result;
     }
@@ -335,7 +344,7 @@ var applyCustomConfig = (function(){
             var keyParts = key.split('|');
             var target = keyParts[0];
             var parent = keyParts[1];
-            var add = keyParts[2];
+            var mode = keyParts[2];
             var items = configData[target] || [];
 
             _.each(configFile.getchildren(), function (element) {
@@ -344,7 +353,7 @@ var applyCustomConfig = (function(){
                     type: type,
                     destination: element.tag,
                     data: element,
-                    add: add
+                    mode: mode
                 });
             });
 
@@ -505,7 +514,7 @@ var applyCustomConfig = (function(){
                 logger.debug("**childEl"); //logger.dump(childEl);
 
                 // if child element doesnt exist, create new element
-                if(!childEl || item.add === 'true') {
+                if(!childEl || item.mode === 'add') {
                     childEl = new et.Element(item.destination);
                     parentEl.append(childEl);
                 }
@@ -571,7 +580,8 @@ var applyCustomConfig = (function(){
             if (!value && item.data.tag === "string") {
                 value = "";
             }
-            if (item.data.tag === "array" && infoPlist[key]) {
+            //logger.dump(item);
+            if (item.data.tag === "array" && infoPlist[key] && item.mode !== 'replace') {
                 infoPlist[key] = infoPlist[key].concat(value).filter(onlyUnique);
             } else {
                 infoPlist[key] = value;
