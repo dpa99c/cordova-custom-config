@@ -14,6 +14,7 @@ var logger,
     plist,
     xcode,
     tostr,
+    os,
     fileUtils;
 
 // Other globals
@@ -595,6 +596,26 @@ var applyCustomConfig = (function(){
     }
 
     /**
+     * Updates the *-Prefix.pch file file with data from config.xml
+     */
+    function updateIosPch (targetFilePath, configItems) {
+        var content = fs.readFileSync(targetFilePath, 'utf-8');
+        var strings = [];
+        _.each(configItems, function (item) {
+            if (item.data.tag === "string") {
+                item.data.text && content.indexOf(item.data.text.trim()) === -1 && strings.push(item.data.text.trim());
+            } else if (item.data.tag === "array") {
+                _.each(item.data.getchildren(), function (child) {
+                    child.text && content.indexOf(child.text.trim()) === -1 && strings.push(child.text.trim());
+                });
+            }
+            if (strings.length) {
+                fs.appendFileSync(targetFilePath, os.EOL + strings.join(os.EOL) + os.EOL, { encoding: 'utf-8' });
+            }
+        });
+    }
+
+    /**
      * Updates the project.pbxproj file with data from config.xml
      * @param {String} xcodeProjectPath - path to XCode project file
      * @param {Array} configItems - config items to update project file with
@@ -806,6 +827,11 @@ var applyCustomConfig = (function(){
                     targetFilePath = path.join(platformPath, projectName, targetFileName);
                     ensureBackup(targetFilePath, platform, targetFileName);
                     updateIosPlist(targetFilePath, configItems);
+                }else if (targetFileName.indexOf("Prefix.pch") > -1) {
+                    targetFileName =  projectName + '-Prefix.pch';
+                    targetFilePath = path.join(platformPath, projectName, targetFileName);
+                    ensureBackup(targetFilePath, platform, targetFileName);
+                    updateIosPch(targetFilePath, configItems);
                 }
 
             } else if (platform === 'android' && targetFileName === 'AndroidManifest.xml') {
@@ -837,6 +863,7 @@ var applyCustomConfig = (function(){
             plist = require('plist'),
             xcode = require('xcode'),
             tostr = require('tostr'),
+            os = require('os'),
             fileUtils = require(path.resolve(hooksPath, "fileUtils.js"))(ctx);
         logger.verbose("Loaded module dependencies");
     };
