@@ -58,7 +58,7 @@ The plugin is registered on [npm](https://www.npmjs.com/package/cordova-custom-c
 
 ## Important note for PhoneGap Build / Intel XDK
 
-This plugin **WILL NOT WORK** with [Phonegap Build](https://build.phonegap.com/) because it relies on using [hook scripts](https://cordova.apache.org/docs/en/latest/guide/appdev/hooks/) which are [not supported by Phonegap Build](https://github.com/phonegap/build/issues/279).
+This plugin **WILL NOT WORK** with [Phonegap Build](https://build.phonegap.com/) because it relies on using [hook scripts](https://cordova.apache.org/docs/en/latest/guide/appdev/hooks/) which are [not supported by Phonegap Build](https://github.com/phonegap/build/issues/425).
 
 The same goes for [Intel XDK](https://software.intel.com/en-us/intel-xdk) which also [does not support hook scripts](https://software.intel.com/en-us/xdk/docs/add-manage-project-plugins).
 
@@ -373,8 +373,14 @@ will add resource `image.png` from `./src/content` (i.e. `../../src/content/imag
 
 ### iOS config blocks
 
-- `<config-file>` elements are currently only used to set preferences in the project .plist file (`platforms/ios/{PROJECT_NAME}/{PROJECT_NAME}-Info.plist`).
-- the `target` attribute of the `<preference>` should be set to `*-Info.plist` and the `platform` to `ios`: `<config-file platform="ios" target="*-Info.plist">`
+- `<config-file>` elements are currently used to:
+    - set preferences in the project .plist file (`platforms/ios/{PROJECT_NAME}/{PROJECT_NAME}-Info.plist`).
+    - add to Precompiled Headers file (`platforms/ios/{PROJECT_NAME}/{PROJECT_NAME}-Prefix.pch`).
+- all `<config-file>` elements should have the  `platform` attribute set to `ios`: `<config-file platform="ios">`
+
+#### iOS project plist config blocks
+
+- the `target` attribute of the `<config-file>` should be set to `*-Info.plist`: `<config-file platform="ios" target="*-Info.plist">`
 - the `parent` attribute is used to determine which key name to use for the custom preference
     - e.g. `<config-file platform="ios" target="*-Info.plist" parent="NSLocationAlwaysUsageDescription">`
     - will appear in `{PROJECT_NAME}-Info.plist` as `<key>NSLocationAlwaysUsageDescription</key>` under `/plist/dict`
@@ -462,6 +468,10 @@ will add resource `image.png` from `./src/content` (i.e. `../../src/content/imag
               <string>myapp</string>
                <string>myapp2</string>
           </array>`
+
+#### iOS Precompile Header config blocks
+
+- the `target` attribute of the `<config-file>` should be set to `*-Prefix.pch`: `<config-file platform="ios" target="*-Prefix.pch">`
 
 ### iOS example
 
