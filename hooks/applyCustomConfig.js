@@ -130,6 +130,9 @@ var applyCustomConfig = (function(){
 
     var preferencesData;
 
+    var syncOperationsComplete = false;
+    var asyncOperationsRemaining = 0;
+
 
     /*********************
      * Internal functions
@@ -237,8 +240,10 @@ var applyCustomConfig = (function(){
 
     // Parses iOS preferences into project.pbxproj
     function parseiOSPreferences(preferences, configData){
+        var hasPbxProjPrefs = false;
         _.each(preferences, function (preference) {
             if(preference.attrib.name.match(new RegExp("^ios-"))){
+                hasPbxProjPrefs = true;
                 var parts = preference.attrib.name.split("-"),
                     target = "project.pbxproj",
                     prefData = {
@@ -301,6 +306,9 @@ var applyCustomConfig = (function(){
                 configData[target].push(prefData);
             }
         });
+        if(hasPbxProjPrefs){
+            asyncOperationsRemaining++;
+        }
     }
 
     // Parses supported Android preferences using the preference mapping into the appropriate XML elements in AndroidManifest.xml
@@ -524,6 +532,7 @@ var applyCustomConfig = (function(){
             }
         });
         fs.writeFileSync(targetFilePath, tempManifest.write({indent: 4}), 'utf-8');
+        logger.verbose("Wrote file " + targetFilePath);
     }
 
 
@@ -562,6 +571,7 @@ var applyCustomConfig = (function(){
 
         });
         fs.writeFileSync(targetFilePath, tempManifest.write({indent: 4}), 'utf-8');
+        logger.verbose("Wrote file " + targetFilePath);
     }
 
     /* Updates the *-Info.plist file with data from config.xml by parsing to an xml string, then using the plist
@@ -593,6 +603,7 @@ var applyCustomConfig = (function(){
         tempInfoPlist = plist.build(infoPlist);
         tempInfoPlist = tempInfoPlist.replace(/<string>[\s\r\n]*<\/string>/g,'<string></string>');
         fs.writeFileSync(targetFilePath, tempInfoPlist, 'utf-8');
+        logger.verbose("Wrote file " + targetFilePath);
     }
 
     /**
@@ -649,7 +660,10 @@ var applyCustomConfig = (function(){
                     }
                 });
                 fs.writeFileSync(xcodeProjectPath, xcodeProject.writeSync(), 'utf-8');
+                logger.verbose("Wrote file " + xcodeProjectPath);
             }
+            asyncOperationsRemaining--;
+            checkComplete();
         });
     }
 
@@ -852,6 +866,12 @@ var applyCustomConfig = (function(){
         deferral.resolve();
     }
 
+    function checkComplete(){
+        if(syncOperationsComplete && asyncOperationsRemaining === 0){
+            complete();
+        }
+    }
+
     /*************
      * Public API
      *************/
@@ -888,7 +908,8 @@ var applyCustomConfig = (function(){
             try{
                 updatePlatformConfig(platform);
                 if(index === context.opts.platforms.length - 1){
-                    complete();
+                    syncOperationsComplete = true;
+                    checkComplete();
                 }
             }catch(e){
                 var msg = "Error updating config for platform '"+platform+"': "+ e.message;
