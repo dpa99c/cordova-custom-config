@@ -42,6 +42,14 @@ cordova-custom-config plugin [![Build Status](https://travis-ci.org/dpa99c/cordo
 This Cordova/Phonegap plugin for iOS and Android provides hook scripts to update platform configuration files based on custom preferences and config-file data defined in config.xml
 that are not supported out-of-the-box by Cordova/Phonegap.
 
+<!-- DONATE -->
+[![donate](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG_global.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=ZRD3W47HQ3EMJ)
+
+I dedicate a considerable amount of my free time to developing and maintaining this Cordova plugin, along with my other Open Source software.
+To help ensure this plugin is kept updated, new features are added and bugfixes are implemented quickly, please donate a couple of dollars (or a little more if you can stretch) as this will help me to afford to dedicate time to its maintenance. Please consider donating if you're using this plugin in an app that makes you money, if you're being paid to make the app, if you're asking for new features or priority bug fixes.
+<!-- END DONATE -->
+
+
 ## Why should I use it?
 
 While some platform preferences can be set via Cordova/Phonegap in the config.xml, many (especially ones related to newer platform releases) cannot.
@@ -373,8 +381,14 @@ will add resource `image.png` from `./src/content` (i.e. `../../src/content/imag
 
 ### iOS config blocks
 
-- `<config-file>` elements are currently only used to set preferences in the project .plist file (`platforms/ios/{PROJECT_NAME}/{PROJECT_NAME}-Info.plist`).
-- the `target` attribute of the `<preference>` should be set to `*-Info.plist` and the `platform` to `ios`: `<config-file platform="ios" target="*-Info.plist">`
+- `<config-file>` elements are currently used to:
+    - set preferences in the project .plist file (`platforms/ios/{PROJECT_NAME}/{PROJECT_NAME}-Info.plist`).
+    - add to Precompiled Headers file (`platforms/ios/{PROJECT_NAME}/{PROJECT_NAME}-Prefix.pch`).
+- all `<config-file>` elements should have the  `platform` attribute set to `ios`: `<config-file platform="ios">`
+
+#### iOS project plist config blocks
+
+- the `target` attribute of the `<config-file>` should be set to `*-Info.plist`: `<config-file platform="ios" target="*-Info.plist">`
 - the `parent` attribute is used to determine which key name to use for the custom preference
     - e.g. `<config-file platform="ios" target="*-Info.plist" parent="NSLocationAlwaysUsageDescription">`
     - will appear in `{PROJECT_NAME}-Info.plist` as `<key>NSLocationAlwaysUsageDescription</key>` under `/plist/dict`
@@ -462,6 +476,10 @@ will add resource `image.png` from `./src/content` (i.e. `../../src/content/imag
               <string>myapp</string>
                <string>myapp2</string>
           </array>`
+
+#### iOS Precompile Header config blocks
+
+- the `target` attribute of the `<config-file>` should be set to `*-Prefix.pch`: `<config-file platform="ios" target="*-Prefix.pch">`
 
 ### iOS example
 
