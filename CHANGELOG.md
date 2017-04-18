@@ -1,4 +1,4 @@
-#CHANGELOG
+# CHANGELOG
 
 **v3.1.4**
 * Add missing before_prepare and before_compile plugin hooks. Fixes #110.
