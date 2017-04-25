@@ -10,7 +10,7 @@ cordova-custom-config plugin [![Build Status](https://travis-ci.org/dpa99c/cordo
 
 - [Overview](#overview)
   - [Why should I use it?](#why-should-i-use-it)
-  - [Important note for PhoneGap Build / Intel XDK](#important-note-for-phonegap-build--intel-xdk)
+  - [Important note for remote build environments](#important-note-for-remote-build-environments)
 - [Installation](#installation)
 - [Usage](#usage)
   - [Removable preferences via backup/restore](#removable-preferences-via-backuprestore)
@@ -64,13 +64,20 @@ and maintained between builds or even if a platform is removed and re-added.
 The plugin is registered on [npm](https://www.npmjs.com/package/cordova-custom-config) (requires Cordova CLI 5.0.0+) as `cordova-custom-config`
 
 
-## Important note for PhoneGap Build / Intel XDK
+## Important note for remote build environments
 
-This plugin **WILL NOT WORK** with [Phonegap Build](https://build.phonegap.com/) because it relies on using [hook scripts](https://cordova.apache.org/docs/en/latest/guide/appdev/hooks/) which are [not supported by Phonegap Build](https://github.com/phonegap/build/issues/425).
+This plugin is intended for the automated application of custom configuration to native platform projects in a **local build environment**.
 
-The same goes for [Intel XDK](https://software.intel.com/en-us/intel-xdk) which also [does not support hook scripts](https://software.intel.com/en-us/xdk/docs/add-manage-project-plugins).
+This plugin **WILL NOT WORK** with remote ("Cloud") build environments that do not support the execution of this plugin's [hook scripts](https://cordova.apache.org/docs/en/latest/guide/appdev/hooks/). This includes:
 
+- [Phonegap Build](https://github.com/phonegap/build/issues/425) 
+- [Intel XDK](https://software.intel.com/en-us/xdk/docs/add-manage-project-plugins)
+- [Telerik Appbuilder](http://docs.telerik.com/platform/appbuilder/cordova/using-plugins/using-custom-plugins/using-custom-plugins)
+- [Ionic Cloud](https://docs.ionic.io/services/package/#hooks)
+ 
 If you are using another cloud-based Cordova/Phonegap build service and find this plugin doesn't work, the reason is probably also the same.
+
+FWIW: if you are professionally developing Cordova/Phonegap apps, you are eventually going to find it preferable to build locally.
 
 # Installation
 
