@@ -28,7 +28,7 @@ var applyCustomConfig = (function(){
 
     var defaultHook = "after_prepare";
 
-    var applyCustomConfig = {}, rootdir, context, configXml, projectName, settings = {}, updatedFiles = {};
+    var applyCustomConfig = {}, rootdir, plugindir, context, configXml, projectName, settings = {}, updatedFiles = {};
 
     var androidActivityNames = [
         "CordovaApp",  // Cordova <= 4.2.0
@@ -129,6 +129,7 @@ var applyCustomConfig = (function(){
     var xcconfigs = ["build.xcconfig", "build-extras.xcconfig", "build-debug.xcconfig", "build-release.xcconfig"];
 
     var preferencesData;
+    var resources;
 
     var syncOperationsComplete = false;
     var asyncOperationsRemaining = 0;
@@ -178,6 +179,19 @@ var applyCustomConfig = (function(){
         return prefs;
     }
 
+    /* Retrieves all <resource> from config.xml and returns a map of resources with platform as the key.
+     */
+    function getPlatformResources(platform) {
+        if(!resources) {
+            resources = {};
+        }
+
+        if(!resources[platform]) {
+            resources[platform] = configXml.findall('platform[@name=\'' + platform + '\']/resource');
+        }
+        return resources[platform];
+    }
+
     /**
      * Implementation of _.keyBy so old versions of lodash (<2.0.0) don't cause issues
      */
@@ -221,11 +235,12 @@ var applyCustomConfig = (function(){
         var configData = {};
         parsePlatformPreferences(configData, platform);
         parseConfigFiles(configData, platform);
+        parseResources(configData, platform);
 
         return configData;
     }
 
-    // Retrieves the config.xml's pereferences for a given platform and parses them into JSON data
+    // Retrieves the config.xml's preferences for a given platform and parses them into JSON data
     function parsePlatformPreferences(configData, platform) {
         var preferences = getPlatformPreferences(platform);
         switch(platform){
@@ -367,6 +382,45 @@ var applyCustomConfig = (function(){
             });
 
             configData[target] = items;
+        });
+    }
+
+
+    // Retrieves the config.xml's resources for a given platform and parses them into JSON data
+    function parseResources(configData, platform) {
+        var resources = getPlatformResources(platform);
+        switch(platform){
+            case "ios":
+                parseiOSResources(resources, configData);
+                break;
+            case "android":
+                break;
+        }
+    }
+
+    // Parses supported iOS resources
+    function parseiOSResources(resources, configData){
+
+        _.each(resources, function (resource) {
+            var resourceData, catalog;
+            if(resource.attrib.type === "image"){
+                catalog = resource.attrib.catalog;
+                target = "asset_catalog."+catalog;
+                resourceData = {
+                    type: resource.attrib.type,
+                    catalog: catalog,
+                    src: resource.attrib.src,
+                    scale: resource.attrib.scale,
+                    idiom: resource.attrib.idiom
+                };
+            }
+
+            if(resourceData){
+                if(!configData[target]) {
+                    configData[target] = [];
+                }
+                configData[target].push(resourceData);
+            }
         });
     }
 
@@ -770,6 +824,56 @@ var applyCustomConfig = (function(){
 
     }
 
+    function deployAssetCatalog(targetName, targetDirPath, configItems){
+        var contents;
+        var contentsFilePath = path.join(targetDirPath, "Contents.json");
+
+        if(!fileUtils.directoryExists(targetDirPath)){
+            fileUtils.createDirectory(targetDirPath);
+            contents = fs.readFileSync(path.join(plugindir, "templates", "ios", "Contents.json"), 'utf-8');
+        }else{
+            contents = fs.readFileSync(contentsFilePath);
+        }
+
+        try{
+            contents = JSON.parse(contents);
+        }catch(e){
+            logger.error("Unable to parse Contents.json of asset catalog '" + targetName + "' - aborting deployment ");
+            return;
+        }
+
+        _.each(configItems, function (item) {
+            var srcImgFilePath = path.join(cwd, item.src);
+            if(!fileUtils.fileExists(srcImgFilePath)){
+                logger.error("Resource file not found: "+item.src+" ("+srcImgFilePath+")");
+                return;
+            }
+
+            var srcImgFileName = srcImgFilePath.split(path.sep).pop();
+            var targetImgFilePath = path.join(targetDirPath, srcImgFileName);
+            if(fileUtils.fileExists(targetImgFilePath)){
+                logger.verbose("Resource file already exists: "+item.src+" ("+targetImgFilePath+")");
+                return;
+            }
+
+            // Copy source image
+            fileUtils.copySync(srcImgFilePath, targetImgFilePath);
+
+            // Create JSON entry
+            if(!item.scale || !item.scale.match(/^[1-3]{1}x$/)){
+                logger.error("scale must be specified as 1x, 2x or 3x for "+srcImgFileName+" in "+targetName+" asset catalog - skipping image");
+                return;
+            }
+            var entry = {
+                filename: srcImgFileName,
+                scale: item.scale,
+                idiom: item.idiom || "universal"
+            };
+            contents.images.push(entry);
+            fs.writeFileSync(contentsFilePath, JSON.stringify(contents));
+        });
+    }
+
     function regExpEscape(literal_string) {
         return literal_string.replace(/[-[\]{}()*+!<=:?.\/\\^$|#\s,]/g, '\\$&');
     }
@@ -784,7 +888,7 @@ var applyCustomConfig = (function(){
 
 
     function ensureBackup(targetFilePath, platform, targetFileName){
-        var backupDirPath = path.join(cwd, 'plugins', context.opts.plugin.id, "backup"),
+        var backupDirPath = path.join(plugindir, "backup"),
             backupPlatformPath = path.join(backupDirPath, platform),
             backupFilePath = path.join(backupPlatformPath, targetFileName);
 
@@ -820,41 +924,45 @@ var applyCustomConfig = (function(){
         var configData = parseConfigXml(platform),
             platformPath = path.join(rootdir, 'platforms', platform);
 
-        _.each(configData, function (configItems, targetFileName) {
+        _.each(configData, function (configItems, targetName) {
             var targetFilePath;
             if (platform === 'ios') {
-                if (targetFileName.indexOf("Info.plist") > -1) {
-                    targetFileName =  projectName + '-Info.plist';
-                    targetFilePath = path.join(platformPath, projectName, targetFileName);
-                    ensureBackup(targetFilePath, platform, targetFileName);
+                if (targetName.indexOf("Info.plist") > -1) {
+                    targetName =  projectName + '-Info.plist';
+                    targetFilePath = path.join(platformPath, projectName, targetName);
+                    ensureBackup(targetFilePath, platform, targetName);
                     updateIosPlist(targetFilePath, configItems);
-                }else if (targetFileName === "project.pbxproj") {
-                    targetFilePath = path.join(platformPath, projectName + '.xcodeproj', targetFileName);
-                    ensureBackup(targetFilePath, platform, targetFileName);
+                }else if (targetName === "project.pbxproj") {
+                    targetFilePath = path.join(platformPath, projectName + '.xcodeproj', targetName);
+                    ensureBackup(targetFilePath, platform, targetName);
                     updateIosPbxProj(targetFilePath, configItems);
                     updateXCConfigs(configItems, platformPath);
-                }else if (targetFileName.indexOf("Entitlements-Release.plist") > -1) {
-                    targetFilePath = path.join(platformPath, projectName, targetFileName);
-                    ensureBackup(targetFilePath, platform, targetFileName);
+                }else if (targetName.indexOf("Entitlements-Release.plist") > -1) {
+                    targetFilePath = path.join(platformPath, projectName, targetName);
+                    ensureBackup(targetFilePath, platform, targetName);
                     updateIosPlist(targetFilePath, configItems);
-                }else if (targetFileName.indexOf("Entitlements-Debug.plist") > -1) {
-                    targetFilePath = path.join(platformPath, projectName, targetFileName);
-                    ensureBackup(targetFilePath, platform, targetFileName);
+                }else if (targetName.indexOf("Entitlements-Debug.plist") > -1) {
+                    targetFilePath = path.join(platformPath, projectName, targetName);
+                    ensureBackup(targetFilePath, platform, targetName);
                     updateIosPlist(targetFilePath, configItems);
-                }else if (targetFileName.indexOf("Prefix.pch") > -1) {
-                    targetFileName =  projectName + '-Prefix.pch';
-                    targetFilePath = path.join(platformPath, projectName, targetFileName);
-                    ensureBackup(targetFilePath, platform, targetFileName);
+                }else if (targetName.indexOf("Prefix.pch") > -1) {
+                    targetName =  projectName + '-Prefix.pch';
+                    targetFilePath = path.join(platformPath, projectName, targetName);
+                    ensureBackup(targetFilePath, platform, targetName);
                     updateIosPch(targetFilePath, configItems);
+                }else if (targetName.indexOf("asset_catalog") > -1) {
+                    targetName =  targetName.split('.')[1];
+                    var targetDirPath = path.join(platformPath, projectName, "Images.xcassets", targetName+".imageset");
+                    deployAssetCatalog(targetName, targetDirPath, configItems);
                 }
 
-            } else if (platform === 'android' && targetFileName === 'AndroidManifest.xml') {
-                targetFilePath = path.join(platformPath, targetFileName);
-                ensureBackup(targetFilePath, platform, targetFileName);
+            } else if (platform === 'android' && targetName === 'AndroidManifest.xml') {
+                targetFilePath = path.join(platformPath, targetName);
+                ensureBackup(targetFilePath, platform, targetName);
                 updateAndroidManifest(targetFilePath, configItems);
             } else if (platform === 'wp8') {
-                targetFilePath = path.join(platformPath, targetFileName);
-                ensureBackup(targetFilePath, platform, targetFileName);
+                targetFilePath = path.join(platformPath, targetName);
+                ensureBackup(targetFilePath, platform, targetName);
                 updateWp8Manifest(targetFilePath, configItems);
             }
         });
@@ -891,6 +999,7 @@ var applyCustomConfig = (function(){
     applyCustomConfig.init = function(ctx){
         context = ctx;
         rootdir = context.opts.projectRoot;
+        plugindir = path.join(cwd, 'plugins', context.opts.plugin.id);
 
         configXml = fileUtils.getConfigXml();
         projectName = fileUtils.getProjectName();
