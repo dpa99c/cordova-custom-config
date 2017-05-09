@@ -1,4 +1,6 @@
 # CHANGELOG
+**v3.2.0**
+* Add support for iOS asset catalogs as image resources. 
 
 **v3.1.4**
 * Add missing before_prepare and before_compile plugin hooks. Fixes #110.

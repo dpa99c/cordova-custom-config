@@ -25,8 +25,13 @@ cordova-custom-config plugin [![Build Status](https://travis-ci.org/dpa99c/cordo
   - [iOS](#ios)
     - [iOS preferences](#ios-preferences)
       - [XCBuildConfiguration](#xcbuildconfiguration)
+        - [.xcconfig files](#xcconfig-files)
+        - [CODE\_SIGN\_IDENTITY preferences](#code%5C_sign%5C_identity-preferences)
       - [xcodefunc](#xcodefunc)
     - [iOS config blocks](#ios-config-blocks)
+      - [iOS project plist config blocks](#ios-project-plist-config-blocks)
+      - [iOS Precompile Header config blocks](#ios-precompile-header-config-blocks)
+    - [iOS image resources](#ios-image-resources)
     - [iOS example](#ios-example)
   - [Plugin preferences](#plugin-preferences)
   - [Log output](#log-output)
@@ -285,13 +290,15 @@ config.xml:
         <config-file target="AndroidManifest.xml" parent="./" mode="add">
             <application android:name="customApplication"></application>
         </config-file>
+        
     </platform>
 
 ## iOS
 
 - The plugin currently supports custom configuration of:
-    - the project plist (`*-Info.plist`) using config blocks
-    - build settings using preference elements
+    - the project plist (`*-Info.plist`) using `<config-file>` blocks
+    - build settings using `<preference>` elements
+    - image asset catalogs using `<resource>` elements
 - All iOS-specific config should be placed inside the `<platform name="ios">` in `config.xml`.
 
 ### iOS preferences
@@ -488,6 +495,33 @@ will add resource `image.png` from `./src/content` (i.e. `../../src/content/imag
 
 - the `target` attribute of the `<config-file>` should be set to `*-Prefix.pch`: `<config-file platform="ios" target="*-Prefix.pch">`
 
+### iOS image resources
+
+- Image [asset catalogs](https://developer.apple.com/library/content/documentation/Xcode/Reference/xcode_ref-Asset_Catalog_Format/) can be defined using `<resource>` elements
+- The `<resource>` elements must be places inside of the `<platform name="ios">` element
+- The `<resource>` elements must have the attribute `type="image"`: `<resource type="image" />`
+- The `src` attribute (required) should specify the relative local path to the image file. 
+    - The relative root is the Cordova project root
+    - e.g. `<resource src="resources/custom-catalog/back@1x.png" />`
+        - where the image file is location in `/path/to/project/root/resources/custom-catalog/back@1x.png`
+- The `catalog` attribute (required) specifies the name of the catalog to add the image to
+    - e.g. `<resource catalog="custom-catalog"/>`
+- The `scale` attribute (required) specifies the scale factor of the image
+    - Valid values are: `1x`, `2x`, `3x`
+    - e.g. `<resource scale="1x"/>`
+- The `idiom` attribute (optional) specifies the target device family
+    - Valid values are: 
+        - `universal` - all devices
+        - `iphone` - iPhones only
+        - `ipad` - iPads only
+        - `watch` - Apple Watch only
+    - If not specified, defaults to `universal`
+    - e.g. `<resource idiom="iphone"/>`
+- Full example: 
+
+    
+    <resource type="image" src="resources/custom-catalog/back@1x.png" catalog="custom-catalog" scale="1x" idiom="iphone" />
+
 ### iOS example
 
 config.xml:
@@ -563,6 +597,11 @@ config.xml:
                 <true/>
             </dict>
         </config-file>
+        
+        <!-- Custom image asset catalog -->
+        <resource type="image" catalog="custom" src="resources/ios/custom-icons/back@1x.png" scale="1x" idiom="universal" />
+        <resource type="image" catalog="custom" src="resources/ios/custom-icons/back@2x.png" scale="2x" idiom="universal" />
+        <resource type="image" catalog="custom" src="resources/ios/custom-icons/back@3x.png" scale="3x" idiom="universal" />
     </platform>
 
 ## Plugin preferences
