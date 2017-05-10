@@ -519,8 +519,7 @@ will add resource `image.png` from `./src/content` (i.e. `../../src/content/imag
     - e.g. `<resource idiom="iphone"/>`
 - Full example: 
 
-    
-    <resource type="image" src="resources/custom-catalog/back@1x.png" catalog="custom-catalog" scale="1x" idiom="iphone" />
+    `<resource type="image" src="resources/custom-catalog/back@1x.png" catalog="custom-catalog" scale="1x" idiom="iphone" />`
 
 ### iOS example
 
