@@ -499,9 +499,7 @@ will add resource `image.png` from `./src/content` (i.e. `../../src/content/imag
 
 Purpose:
 - Sometimes it can be necessary to create custom iOS image asset catalogs in Cordova-based iOS apps.
-    - For example, some plugins require that custom images be present in a custom asset catalog in order to make use of them. These include:
-        - [cordova-plugin-firebase](https://github.com/arnesson/cordova-plugin-firebase)
-        - [phonegap-plugin-push](https://github.com/phonegap/phonegap-plugin-push)
+    - For example, some plugins require that custom images be present in a custom asset catalog in order to make use of them:
         - [cordova-plugin-themeablebrowser](https://github.com/initialxy/cordova-plugin-themeablebrowser)
         - [cordova-plugin-3dtouch](https://github.com/EddyVerbruggen/cordova-plugin-3dtouch)
     - This could be done manually by editing the platform project in XCode, but this is fragile since platform projects are volatile. 
