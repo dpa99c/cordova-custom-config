@@ -1,4 +1,7 @@
 # CHANGELOG
+**v3.3.0**
+* Enable deleting of existing iOS plist entries.
+
 **v3.2.0**
 * Add support for iOS asset catalogs as image resources. 
 
