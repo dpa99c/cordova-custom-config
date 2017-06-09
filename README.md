@@ -490,6 +490,22 @@ will add resource `image.png` from `./src/content` (i.e. `../../src/content/imag
               <string>myapp</string>
                <string>myapp2</string>
           </array>`
+          
+- to delete existing values in the plist, specify the key to delete as the parent and use the attribute `mode="delete"`:
+     - For example, if the plist already contains:
+
+        `<key>LSApplicationQueriesSchemes</key>
+        <array>
+            <string>fbapi</string>
+            <string>fb-messenger-api</string>
+        </array>`
+
+    - Then adding the `<config-file>` block:
+
+        `<config-file parent="LSApplicationQueriesSchemes" target="*-Info.plist" mode="delete"/>`
+
+      - will result in the existing block being removed from the plist
+  
 
 #### iOS Precompile Header config blocks
 

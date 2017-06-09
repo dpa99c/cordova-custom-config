@@ -371,15 +371,24 @@ var applyCustomConfig = (function(){
             var mode = keyParts[2];
             var items = configData[target] || [];
 
-            _.each(configFile.getchildren(), function (element) {
+            var children = configFile.getchildren();
+            if(children.length > 0){
+                _.each(children, function (element) {
+                    items.push({
+                        parent: parent,
+                        type: type,
+                        destination: element.tag,
+                        data: element,
+                        mode: mode
+                    });
+                });
+            }else{
                 items.push({
                     parent: parent,
                     type: type,
-                    destination: element.tag,
-                    data: element,
                     mode: mode
                 });
-            });
+            }
 
             configData[target] = items;
         });
@@ -638,15 +647,20 @@ var applyCustomConfig = (function(){
         _.each(configItems, function (item) {
             var key = item.parent;
             var plistXml = '<plist><dict><key>' + key + '</key>';
-            plistXml += eltreeToXmlString(item.data) + '</dict></plist>';
-
-            var configPlistObj = plist.parse(plistXml);
-            var value = configPlistObj[key];
-            if (!value && item.data.tag === "string") {
-                value = "";
+            var value;
+            if(item.data){
+                plistXml += eltreeToXmlString(item.data) + '</dict></plist>';
+                var configPlistObj = plist.parse(plistXml);
+                value = configPlistObj[key];
+                if (!value && item.data.tag === "string") {
+                    value = "";
+                }
             }
+
             //logger.dump(item);
-            if (item.data.tag === "array" && infoPlist[key] && item.mode !== 'replace') {
+            if (typeof(infoPlist[key]) !== 'undefined' && item.mode === 'delete') {
+                delete infoPlist[key];
+            }else if (item.data.tag === "array" && infoPlist[key] && item.mode !== 'replace') {
                 infoPlist[key] = infoPlist[key].concat(value).filter(onlyUnique);
             } else {
                 infoPlist[key] = value;
