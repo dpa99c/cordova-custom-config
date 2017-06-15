@@ -129,8 +129,8 @@ module.exports = function(ctx) {
     try{
         restoreBackups.loadDependencies(ctx);
     }catch(e){
-        logger.warn("Error loading dependencies ("+e.message+") - attempting to resolve");
-        require(path.resolve(hooksPath, "resolveDependencies.js"))(ctx).then(restoreBackups.loadDependencies.bind(this, ctx));
+        var msg = "Error loading dependencies - ensure the plugin has been installed via cordova-fetch or run 'npm install cordova-custom-config': "+e.message;
+        deferral.reject(msg);
     }
 
     return deferral.promise;

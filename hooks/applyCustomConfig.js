@@ -1058,30 +1058,15 @@ module.exports = function(ctx) {
 
     logger.verbose("Running applyCustomConfig.js");
 
-    var init = function(){
-        applyCustomConfig.init(ctx);
-    };
-
-    var depsLoaded = false;
     try{
         applyCustomConfig.loadDependencies(ctx);
-        depsLoaded = true;
     }catch(e){
-        logger.warn("Error loading dependencies ("+e.message+") - attempting to resolve");
+        var msg = "Error loading dependencies - ensure the plugin has been installed via cordova-fetch or run 'npm install cordova-custom-config': "+e.message;
+        deferral.reject(msg);
     }
 
-    if(depsLoaded){
-        init();
-    }else{
-        require(path.resolve(hooksPath, "resolveDependencies.js"))(ctx).then(function(){
-            try{
-                applyCustomConfig.loadDependencies(ctx);
-                init();
-            }catch(e){
-                logger.error("Failed loading dependencies ("+e.message+") - unable to resolve");
-            }
-        });
-    }
+    applyCustomConfig.init(ctx);
+
 
     return deferral.promise;
 };

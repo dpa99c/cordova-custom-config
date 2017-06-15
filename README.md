@@ -86,16 +86,15 @@ FWIW: if you are professionally developing Cordova/Phonegap apps, you are eventu
 
 # Installation
 
-The preferred method for installing the plugin is via [`cordova-fetch` feature](https://cordova.apache.org/news/2016/05/24/tools-release.html), added in `cordova@6.2.0`, which is used to resolve the dependencies for this plugin.
+`cordova-custom-config@4+` requires the plugin to be installed via the [`cordova-fetch`](https://cordova.apache.org/news/2016/05/24/tools-release.html) mechanism in order to satisfy its package dependencies by installing it via npm.
 
-To install the plugin with its dependencies, use the `--fetch` argument:
+Therefore a Cordova CLI version of `cordova@7+` is required to install the plugin: 
 
-    $ cordova plugin add cordova-custom-config --fetch --save
-    $ phonegap plugin add cordova-custom-config --fetch --save
+    $ cordova plugin add cordova-custom-config
 
-Any modules that need to be installed will be placed in a `node_modules` folder inside the project folder.
-    
-NOTE: `cordova-custom-config@3` requires (globally installed) `npm@3+` for the dependency resolution to work; using `npm@2` or below will result in errors in resolving dependencies and will cause build failure.
+Or `cordova@6.2+` if the `--fetch` option is specified explicitly:
+
+    $ cordova plugin add cordova-custom-config --fetch
 
 # Usage
 
