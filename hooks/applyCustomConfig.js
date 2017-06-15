@@ -658,7 +658,7 @@ var applyCustomConfig = (function(){
             }
 
             //logger.dump(item);
-            if (typeof(infoPlist[key]) !== 'undefined' && item.mode === 'delete') {
+            if (item.mode === 'delete') {
                 delete infoPlist[key];
             }else if (item.data.tag === "array" && infoPlist[key] && item.mode !== 'replace') {
                 infoPlist[key] = infoPlist[key].concat(value).filter(onlyUnique);
