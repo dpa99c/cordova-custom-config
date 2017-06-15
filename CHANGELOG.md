@@ -1,4 +1,8 @@
 # CHANGELOG
+
+**v4.0.2**
+* Fix iOS bug where a `<config-block>` with mode=delete causes an error if the plist doesn't contain the specified parent key.
+
 **v4.0.0**
 * Remove manual dependency resolution logic and require cordova-fetch for installation.
 
