@@ -1,4 +1,7 @@
 # CHANGELOG
+**v4.0.0**
+* Remove manual dependency resolution logic and require cordova-fetch for installation.
+
 **v3.3.0**
 * Enable deleting of existing iOS plist entries.
 
