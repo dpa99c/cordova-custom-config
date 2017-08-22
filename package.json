@@ -29,13 +29,13 @@
         "manifest"
     ],
     "dependencies": {
-        "lodash": "^4.3.0",
-        "elementtree": "^0.1.6",
-        "plist": "^1.2.0",
-        "xcode": "^0.8.9",
         "colors": "^1.1.2",
+        "elementtree": "^0.1.6",
+        "lodash": "^4.3.0",
+        "plist": "^1.2.0",
         "shelljs": "^0.7.0",
-        "tostr": "^0.1.0"
+        "tostr": "^0.1.0",
+        "xcode": "^0.8.9"
     },
     "devDependencies": {
         "jshint": "^2.6.0",
