@@ -9,7 +9,7 @@ cordova-custom-config plugin [![Build Status](https://travis-ci.org/dpa99c/cordo
 **Table of Contents**
 
 - [Overview](#overview)
-  - [Why should I use it?](#why-should-i-use-it)
+  - [Do I need it?](#do-i-need-it)
   - [Important note for remote build environments](#important-note-for-remote-build-environments)
 - [Installation](#installation)
 - [Usage](#usage)
@@ -25,8 +25,6 @@ cordova-custom-config plugin [![Build Status](https://travis-ci.org/dpa99c/cordo
   - [iOS](#ios)
     - [iOS preferences](#ios-preferences)
       - [XCBuildConfiguration](#xcbuildconfiguration)
-        - [.xcconfig files](#xcconfig-files)
-        - [CODE\_SIGN\_IDENTITY preferences](#code%5C_sign%5C_identity-preferences)
       - [xcodefunc](#xcodefunc)
     - [iOS config blocks](#ios-config-blocks)
       - [iOS project plist config blocks](#ios-project-plist-config-blocks)
@@ -44,8 +42,9 @@ cordova-custom-config plugin [![Build Status](https://travis-ci.org/dpa99c/cordo
 
 # Overview
 
-This Cordova/Phonegap plugin for iOS and Android provides hook scripts to update platform configuration files based on custom preferences and config-file data defined in config.xml
-that are not supported out-of-the-box by Cordova/Phonegap.
+The purpose of this plugin is to enable manipulation of native platform configuration files that are not supported out-of-the-box by Cordova/Phonegap CLI.
+
+The plugin uses hook scripts to update iOS and Android platform configuration files based on custom data defined in `config.xml`.
 
 <!-- DONATE -->
 [![donate](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG_global.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=ZRD3W47HQ3EMJ)
@@ -54,20 +53,27 @@ I dedicate a considerable amount of my free time to developing and maintaining t
 To help ensure this plugin is kept updated, new features are added and bugfixes are implemented quickly, please donate a couple of dollars (or a little more if you can stretch) as this will help me to afford to dedicate time to its maintenance. Please consider donating if you're using this plugin in an app that makes you money, if you're being paid to make the app, if you're asking for new features or priority bug fixes.
 <!-- END DONATE -->
 
+## Do I need it?
 
-## Why should I use it?
+**Manual editing** of the platform configuration files in the `platforms/` directory is one solution to setting of custom platform configuration. 
+But this is not maintainable across multiple development machines or a CI environment where subsequent build operations may overwrite your changes.
 
-While some platform preferences can be set via Cordova/Phonegap in the config.xml, many (especially ones related to newer platform releases) cannot.
-One solution is to manually edit the configuration files in the `platforms/` directory, however this is not maintainable across multiple development machines or a CI environment
-where subsequent build operations may overwrite your changes.
+This plugin reads custom preferences from `config.xml`, which can be committed to version control and therefore applied across multiple development machines, CI environments,
+and maintained between builds, even if a platform is removed and re-added.
 
-This plugin attempts to address this gap by allowing additional platform-specific preferences to be set after the `prepare` operation has completed,
-allowing either preferences set by Cordova to be overridden or other unspecified preferences to be set.
-Since the custom preferences are entered into the config.xml, they can be committed to version control and therefore applied across multiple development machines, CI environments,
-and maintained between builds or even if a platform is removed and re-added.
+**However:** recent versions of the Cordova/Phonegap CLI have added official support for [`<edit-config>`](https://cordova.apache.org/docs/en/latest/plugin_ref/spec.html#edit-config) and [`<config-file>`](https://cordova.apache.org/docs/en/latest/plugin_ref/spec.html#config-file) blocks in the `config.xml` (previously they only worked in `plugin.xml`).
 
-The plugin is registered on [npm](https://www.npmjs.com/package/cordova-custom-config) (requires Cordova CLI 5.0.0+) as `cordova-custom-config`
+So if all you want to do is insert a block of native config or change a native preference, you probably don't need this plugin at all.
 
+I hope that eventually the Cordova/Phonegap CLI will support all the functionality that this plugin provides and it can be retired.
+
+**Until then:** there are still some operations that can be performed by this plugin which are not supported by the latest Cordova/Phonegap CLI versions. These include:
+ 
+ - Overriding default platform preferences set during the `cordova prepare` operation.
+ - Deletion of existing elements/attributes in `AndroidManifest.xml`
+ - Manipulation of build settings in the native iOS Xcode project file `project.pbxproj` via [XCBuildConfiguration](#xcbuildconfiguration) blocks.
+ - Manipulation of iOS Precompile header files via [iOS Precompile Header config blocks](#ios-precompile-header-config-blocks)
+ - Advanced manipulation of iOS Xcode project using [xcodefunc](#xcodefunc).
 
 ## Important note for remote build environments
 
@@ -85,6 +91,8 @@ If you are using another cloud-based Cordova/Phonegap build service and find thi
 FWIW: if you are professionally developing Cordova/Phonegap apps, you are eventually going to find it preferable to build locally.
 
 # Installation
+
+The plugin is registered as `cordova-custom-config` on [npm](https://www.npmjs.com/package/cordova-custom-config) (requires Cordova CLI 5.0.0+)
 
 `cordova-custom-config@4+` requires the plugin to be installed via the [`cordova-fetch`](https://cordova.apache.org/news/2016/05/24/tools-release.html) mechanism in order to satisfy its package dependencies by installing it via npm.
 
