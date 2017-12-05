@@ -1,5 +1,5 @@
 {
-    "version": "4.0.2",
+    "version": "5.0.0",
     "name": "cordova-custom-config",
     "cordova_name": "cordova-custom-config",
     "description": "Cordova/Phonegap plugin to update platform configuration files based on preferences and config-file data defined in config.xml.",
