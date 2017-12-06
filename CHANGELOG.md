@@ -1,7 +1,11 @@
 # CHANGELOG
 
+**v5.0.0** Major update for `cordova-android@7`
+* Support the new Android project structure introduced with the [release of cordova@7.0.0](http://cordova.apache.org/announcements/2017/12/04/cordova-android-7.0.0.html) . Resolves #135.
+* Expect custom config elements to be prefixed with `<custom-` to avoid build issues now `cordova-android@7` attempts to parse `<config-file>` blocks, but continue to support unprefixed elements by default for `cordova-android@6`.
+
 **v4.0.2**
-* Fix iOS bug where a `<config-block>` with mode=delete causes an error if the plist doesn't contain the specified parent key.
+* Fix iOS bug where a `<config-file>` block with `mode=delete` causes an error if the plist doesn't contain the specified parent key.
 
 **v4.0.0**
 * Remove manual dependency resolution logic and require cordova-fetch for installation.

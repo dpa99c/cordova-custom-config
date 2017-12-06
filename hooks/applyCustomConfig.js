@@ -26,9 +26,12 @@ var applyCustomConfig = (function(){
      * Internal properties
      *********************/
 
+    /*
+     * Constants
+     */
     var defaultHook = "after_prepare";
 
-    var applyCustomConfig = {}, rootdir, plugindir, context, configXml, projectName, settings = {}, updatedFiles = {};
+    var elementPrefix = "custom-";
 
     var androidActivityNames = [
         "CordovaApp",  // Cordova <= 4.2.0
@@ -37,7 +40,6 @@ var applyCustomConfig = (function(){
 
     // Tags that can appear multiple times
     // Specified by parent and distinguished by name or label
-
     var androidMultiples = [
         {
             tag: "uses-permission",
@@ -128,11 +130,26 @@ var applyCustomConfig = (function(){
 
     var xcconfigs = ["build.xcconfig", "build-extras.xcconfig", "build-debug.xcconfig", "build-release.xcconfig"];
 
+    var manifestPath = {
+        cordovaAndroid6: 'platforms/android/AndroidManifest.xml',
+        cordovaAndroid7: 'platforms/android/app/src/main/AndroidManifest.xml'
+    };
+
+
+    // Variables
+    var applyCustomConfig = {}, rootdir, plugindir, context, configXml, projectName, settings = {}, updatedFiles = {};
+
     var preferencesData;
     var resources;
 
     var syncOperationsComplete = false;
     var asyncOperationsRemaining = 0;
+
+    // Filepath to AndroidManifest.xml in android platform project
+    var androidManifestFilePath;
+
+    // Indicates if project is using new cordova@7 structure
+    var isNewCordovaAndroid;
 
 
     /*********************
@@ -156,22 +173,34 @@ var applyCustomConfig = (function(){
         return el;
     }
 
+    function getElements(elementName, pathPrefix){
+        var path = (pathPrefix || '') + elementPrefix + elementName;
+        logger.debug("Searching config.xml for prefixed elements: " + path);
+        var els = configXml.findall(path);
+        if(settings["parse_unprefixed"] === 'true' || (!isNewCordovaAndroid && settings["parse_unprefixed"] !== 'false')){
+            path = (pathPrefix || '') + elementName;
+            logger.debug("Searching config.xml for unprefixed elements: " + path);
+            els = els.concat(configXml.findall(path));
+        }
+        return els;
+    }
 
-    /* Retrieves all <preferences ..> from config.xml and returns a map of preferences with platform as the key.
+    /**
+     *  Retrieves all <preferences ..> from config.xml and returns a map of preferences with platform as the key.
      *  If a platform is supplied, common prefs + platform prefs will be returned, otherwise just common prefs are returned.
      */
     function getPlatformPreferences(platform) {
         //init common config.xml prefs if we haven't already
         if(!preferencesData) {
             preferencesData = {
-                common: configXml.findall('preference')
+                common: getElements('preference')
             };
         }
 
         var prefs = preferencesData.common || [];
         if(platform) {
             if(!preferencesData[platform]) {
-                preferencesData[platform] = configXml.findall('platform[@name=\'' + platform + '\']/preference');
+                preferencesData[platform] = getElements('preference','platform[@name=\'' + platform + '\']/');
             }
             prefs = prefs.concat(preferencesData[platform]);
         }
@@ -179,7 +208,8 @@ var applyCustomConfig = (function(){
         return prefs;
     }
 
-    /* Retrieves all <resource> from config.xml and returns a map of resources with platform as the key.
+    /**
+     * Retrieves all <resource> from config.xml and returns a map of resources with platform as the key.
      */
     function getPlatformResources(platform) {
         if(!resources) {
@@ -187,7 +217,7 @@ var applyCustomConfig = (function(){
         }
 
         if(!resources[platform]) {
-            resources[platform] = configXml.findall('platform[@name=\'' + platform + '\']/resource');
+            resources[platform] = getElements('resource','platform[@name=\'' + platform + '\']/');
         }
         return resources[platform];
     }
@@ -203,12 +233,13 @@ var applyCustomConfig = (function(){
         return result;
     }
 
-    /* Retrieves all configured xml for a specific platform/target/parent element nested inside a platforms config-file
-     element within the config.xml.  The config-file elements are then indexed by target|parent so if there are
-     any config-file elements per platform that have the same target and parent, the last config-file element is used.
+    /**
+     *  Retrieves all configured xml for a specific platform/target/parent element nested inside a platforms config-file
+     *  element within the config.xml.  The config-file elements are then indexed by target|parent so if there are
+     *  any config-file elements per platform that have the same target and parent, the last config-file element is used.
      */
     function getConfigFilesByTargetAndParent(platform) {
-        var configFileData = configXml.findall('platform[@name=\'' + platform + '\']/config-file');
+        var configFileData = getElements('config-file','platform[@name=\'' + platform + '\']');
         var result = keyBy(configFileData, function(item) {
             var parent = item.attrib.parent;
 
@@ -230,7 +261,11 @@ var applyCustomConfig = (function(){
         return result;
     }
 
-    // Parses the config.xml's preferences and config-file elements for a given platform
+    /**
+     * Parses the config.xml's preferences and config-file elements for a given platform
+     * @param platform
+     * @returns {{}}
+     */
     function parseConfigXml(platform) {
         var configData = {};
         parsePlatformPreferences(configData, platform);
@@ -240,7 +275,11 @@ var applyCustomConfig = (function(){
         return configData;
     }
 
-    // Retrieves the config.xml's preferences for a given platform and parses them into JSON data
+    /**
+     * Retrieves the config.xml's preferences for a given platform and parses them into JSON data
+     * @param configData
+     * @param platform
+     */
     function parsePlatformPreferences(configData, platform) {
         var preferences = getPlatformPreferences(platform);
         switch(platform){
@@ -253,7 +292,11 @@ var applyCustomConfig = (function(){
         }
     }
 
-    // Parses iOS preferences into project.pbxproj
+    /**
+     * Parses iOS preferences into project.pbxproj
+     * @param preferences
+     * @param configData
+     */
     function parseiOSPreferences(preferences, configData){
         var hasPbxProjPrefs = false;
         _.each(preferences, function (preference) {
@@ -326,7 +369,11 @@ var applyCustomConfig = (function(){
         }
     }
 
-    // Parses supported Android preferences using the preference mapping into the appropriate XML elements in AndroidManifest.xml
+    /**
+     * Parses supported Android preferences using the preference mapping into the appropriate XML elements in AndroidManifest.xml
+     * @param preferences
+     * @param configData
+     */
     function parseAndroidPreferences(preferences, configData){
         var type = 'preference';
 
@@ -359,7 +406,11 @@ var applyCustomConfig = (function(){
         });
     }
 
-    // Retrieves the config.xml's config-file elements for a given platform and parses them into JSON data
+    /**
+     * Retrieves the config.xml's config-file elements for a given platform and parses them into JSON data
+     * @param configData
+     * @param platform
+     */
     function parseConfigFiles(configData, platform) {
         var configFiles = getConfigFilesByTargetAndParent(platform),
             type = 'configFile';
@@ -394,8 +445,11 @@ var applyCustomConfig = (function(){
         });
     }
 
-
-    // Retrieves the config.xml's resources for a given platform and parses them into JSON data
+    /**
+     * Retrieves the config.xml's resources for a given platform and parses them into JSON data
+     * @param configData
+     * @param platform
+     */
     function parseResources(configData, platform) {
         var resources = getPlatformResources(platform);
         switch(platform){
@@ -407,7 +461,11 @@ var applyCustomConfig = (function(){
         }
     }
 
-    // Parses supported iOS resources
+    /**
+     * Parses supported iOS resources
+     * @param resources
+     * @param configData
+     */
     function parseiOSResources(resources, configData){
 
         _.each(resources, function (resource) {
@@ -461,7 +519,11 @@ var applyCustomConfig = (function(){
         return root.find(item.parent || root.find('*/' + item.parent));
     }
 
-    // Updates the AndroidManifest.xml target file with data from config.xml
+    /**
+     * Updates the AndroidManifest.xml target file with data from config.xml
+     * @param targetFilePath
+     * @param configItems
+     */
     function updateAndroidManifest(targetFilePath, configItems) {
         var tempManifest = fileUtils.parseElementtreeSync(targetFilePath),
             root = tempManifest.getroot();
@@ -599,7 +661,11 @@ var applyCustomConfig = (function(){
     }
 
 
-    // Updates target file with data from config.xml
+    /**
+     * Updates target file with data from config.xml
+     * @param targetFilePath
+     * @param configItems
+     */
     function updateWp8Manifest(targetFilePath, configItems) {
         var tempManifest = fileUtils.parseElementtreeSync(targetFilePath),
             root = tempManifest.getroot();
@@ -637,8 +703,11 @@ var applyCustomConfig = (function(){
         logger.verbose("Wrote file " + targetFilePath);
     }
 
-    /* Updates the *-Info.plist file with data from config.xml by parsing to an xml string, then using the plist
-     module to convert the data to a map.  The config.xml data is then replaced or appended to the original plist file
+    /**
+     * Updates the *-Info.plist file with data from config.xml by parsing to an xml string, then using the plist
+     * module to convert the data to a map.  The config.xml data is then replaced or appended to the original plist file
+     * @param targetFilePath
+     * @param configItems
      */
     function updateIosPlist (targetFilePath, configItems) {
         var infoPlist = plist.parse(fs.readFileSync(targetFilePath, 'utf-8')),
@@ -933,8 +1002,15 @@ var applyCustomConfig = (function(){
         }
     }
 
-    // Parses config.xml data, and update each target file for a specified platform
+    /**
+     * Parses config.xml data, and update each target file for a specified platform
+     * @param platform
+     */
     function updatePlatformConfig(platform) {
+        if(platform === "android"){
+            getAndroidManifestFilePath();
+        }
+
         var configData = parseConfigXml(platform),
             platformPath = path.join(rootdir, 'platforms', platform);
 
@@ -971,7 +1047,7 @@ var applyCustomConfig = (function(){
                 }
 
             } else if (platform === 'android' && targetName === 'AndroidManifest.xml') {
-                targetFilePath = path.join(platformPath, targetName);
+                targetFilePath = androidManifestFilePath;
                 ensureBackup(targetFilePath, platform, targetName);
                 updateAndroidManifest(targetFilePath, configItems);
             } else if (platform === 'wp8') {
@@ -982,7 +1058,23 @@ var applyCustomConfig = (function(){
         });
     }
 
-    // Script operations are complete, so resolve deferred promises
+    function getAndroidManifestFilePath(){
+        var cordovaAndroid6Path = path.join(rootdir, manifestPath.cordovaAndroid6);
+        var cordovaAndroid7Path = path.join(rootdir, manifestPath.cordovaAndroid7);
+        if(fileUtils.fileExists(cordovaAndroid7Path)){
+            isNewCordovaAndroid = true;
+            androidManifestFilePath = cordovaAndroid7Path;
+        }else if(fileUtils.fileExists(cordovaAndroid6Path)){
+            isNewCordovaAndroid = false;
+            androidManifestFilePath = cordovaAndroid6Path;
+        }else{
+            throw "Can't find AndroidManifest.xml in platforms/Android";
+        }
+    }
+
+    /**
+     * Script operations are complete, so resolve deferred promises
+     */
     function complete(){
         logger.verbose("Finished applying platform config");
         deferral.resolve();
