@@ -1,5 +1,8 @@
 # CHANGELOG
 
+**v5.0.1**
+* Update `plist` and `xcode` dependencies to resolve issues caused by PR #119. Resolves #136.
+
 **v5.0.0** Major update for `cordova-android@7`
 * Support the new Android project structure introduced with the [release of cordova@7.0.0](http://cordova.apache.org/announcements/2017/12/04/cordova-android-7.0.0.html) . Resolves #135.
 * Expect custom config elements to be prefixed with `<custom-` to avoid build issues now `cordova-android@7` attempts to parse `<config-file>` blocks, but continue to support unprefixed elements by default for `cordova-android@6`.
