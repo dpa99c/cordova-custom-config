@@ -1,5 +1,8 @@
 # CHANGELOG
 
+**v5.0.2**
+* Improve handling of errors caused by missing dependencies or during script running.
+
 **v5.0.1**
 * Update `plist` and `xcode` dependencies to resolve issues caused by PR #119. Resolves #136.
 
