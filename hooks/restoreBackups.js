@@ -3,6 +3,8 @@
 /**********
  * Globals
  **********/
+var TAG = "cordova-custom-config";
+var SCRIPT_NAME = "restoreBackups.js";
 
 // Pre-existing Cordova npm modules
 var deferral, path, cwd;
@@ -77,7 +79,6 @@ var restoreBackups = (function(){
         _ = require('lodash'),
         fileUtils = require(path.resolve(hooksPath, "fileUtils.js"))(ctx);
         logger.verbose("Loaded module dependencies");
-        restoreBackups.init(ctx);
     };
 
     restoreBackups.init = function(ctx){
@@ -109,7 +110,7 @@ var restoreBackups = (function(){
                 var msg = "Error restoring backups for platform '"+platform+"': "+ e.message;
                 logger.error(msg);
                 if(settings.stoponerror){
-                    deferral.reject(msg);
+                    deferral.reject(TAG + ": " +msg);
                 }
             }
         });
@@ -119,17 +120,26 @@ var restoreBackups = (function(){
 })();
 
 module.exports = function(ctx) {
-    deferral = ctx.requireCordovaModule('q').defer();
-    path = ctx.requireCordovaModule('path');
-    cwd = path.resolve();
-
-    hooksPath = path.resolve(ctx.opts.projectRoot, "plugins", ctx.opts.plugin.id, "hooks");
-    logger = require(path.resolve(hooksPath, "logger.js"))(ctx);
-    logger.verbose("Running restoreBackups.js");
     try{
+        deferral = ctx.requireCordovaModule('q').defer();
+        path = ctx.requireCordovaModule('path');
+        cwd = path.resolve();
+
+        hooksPath = path.resolve(ctx.opts.projectRoot, "plugins", ctx.opts.plugin.id, "hooks");
+        logger = require(path.resolve(hooksPath, "logger.js"))(ctx);
+
         restoreBackups.loadDependencies(ctx);
     }catch(e){
-        var msg = "Error loading dependencies - ensure the plugin has been installed via cordova-fetch or run 'npm install cordova-custom-config': "+e.message;
+        var msg = TAG + ": Error loading dependencies for "+SCRIPT_NAME+" - ensure the plugin has been installed via cordova-fetch or run 'npm install cordova-custom-config': "+e.message;
+        deferral.reject(msg);
+        return deferral.promise;
+    }
+
+    try{
+        logger.verbose("Running " + SCRIPT_NAME);
+        restoreBackups.init(ctx);
+    }catch(e){
+        var msg = TAG + ": Error running "+SCRIPT_NAME+": "+e.message;
         deferral.reject(msg);
     }
 

@@ -3,6 +3,9 @@
 /**********
  * Globals
  **********/
+var TAG = "cordova-custom-config";
+var SCRIPT_NAME = "applyCustomConfig.js";
+
 // Pre-existing Cordova npm modules
 var deferral, path, cwd;
 
@@ -29,6 +32,7 @@ var applyCustomConfig = (function(){
     /*
      * Constants
      */
+
     var defaultHook = "after_prepare";
 
     var elementPrefix = "custom-";
@@ -1131,7 +1135,7 @@ var applyCustomConfig = (function(){
                 logger.error(msg);
                 logger.dump(e);
                 if(settings.stoponerror){
-                    deferral.reject(msg);
+                    deferral.reject(TAG + ": " +msg);
                 }
             }
         });
@@ -1141,24 +1145,28 @@ var applyCustomConfig = (function(){
 
 // Main
 module.exports = function(ctx) {
-    deferral = ctx.requireCordovaModule('q').defer();
-    path = ctx.requireCordovaModule('path');
-    cwd = path.resolve();
-
-    hooksPath = path.resolve(ctx.opts.projectRoot, "plugins", ctx.opts.plugin.id, "hooks");
-    logger = require(path.resolve(hooksPath, "logger.js"))(ctx);
-
-    logger.verbose("Running applyCustomConfig.js");
-
     try{
+        deferral = ctx.requireCordovaModule('q').defer();
+        path = ctx.requireCordovaModule('path');
+        cwd = path.resolve();
+
+        hooksPath = path.resolve(ctx.opts.projectRoot, "plugins", ctx.opts.plugin.id, "hooks");
+        logger = require(path.resolve(hooksPath, "logger.js"))(ctx);
+
         applyCustomConfig.loadDependencies(ctx);
     }catch(e){
-        var msg = "Error loading dependencies - ensure the plugin has been installed via cordova-fetch or run 'npm install cordova-custom-config': "+e.message;
+        var msg = TAG + ": Error loading dependencies for "+SCRIPT_NAME+" - ensure the plugin has been installed via cordova-fetch or run 'npm install cordova-custom-config': "+e.message;
         deferral.reject(msg);
+        return deferral.promise;
     }
 
-    applyCustomConfig.init(ctx);
-
+    try{
+        logger.verbose("Running " + SCRIPT_NAME);
+        applyCustomConfig.init(ctx);
+    }catch(e){
+        var msg = TAG + ": Error running "+SCRIPT_NAME+": "+e.message;
+        deferral.reject(msg);
+    }
 
     return deferral.promise;
 };
