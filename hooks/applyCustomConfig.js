@@ -885,14 +885,21 @@ var applyCustomConfig = (function(){
                 };
 
                 // If item's target build type matches the xcconfig build type
-                if(itemBuildType === fileBuildType){
-                    // If file contains the item, replace it with configured value
-                    if(fileContents.match(escapedName) && item.xcconfigEnforce !== "false"){
-                        doReplace();
-                    }else // presence of item is being enforced, so add it to the relevant .xcconfig
-                    if(item.xcconfigEnforce === "true"){
-                        fileContents += "\n"+name+" = "+value;
+                if(itemBuildType === fileBuildType)
+                {
+                    // If config.xml contains any #include statements for use the in xcconfig files.
+                    if(item.name.match("#INCLUDE") && !fileContents.match(value)) {
+                        fileContents += '\n#include "' + value + '"';
                         modified = true;
+                    } else {
+                        // If file contains the item, replace it with configured value
+                        if (fileContents.match(escapedName) && item.xcconfigEnforce !== "false") {
+                            doReplace();
+                        } else // presence of item is being enforced, so add it to the relevant .xcconfig
+                        if (item.xcconfigEnforce === "true") {
+                            fileContents += "\n" + name + " = " + value;
+                            modified = true;
+                        }
                     }
                 }else
                 // if item is a Debug CODE_SIGNING_IDENTITY, this is a special case: Cordova places its default Debug CODE_SIGNING_IDENTITY in build.xcconfig (not build-debug.xcconfig)
