@@ -373,6 +373,8 @@ config.xml:
 - If a preference value doesn't already exist in the corresponding `.xcconfig` file, you can force its addition by setting the preference attribute `xcconfigEnforce="true"`.
 This will append it to the corresponding .xcconfig` file.
      - e.g `<custom-preference name="ios-XCBuildConfiguration-SOME_PREFERENCE" value="Some value" buildType="debug" xcconfigEnforce="true" />`
+- Dependencies on additional `.xcconfig` files be added to a project by using `#include` statements. Note, the buildType attribute applies as stated above, however, xcconfigEnforce has no effect on `#include` statements as it is possible to have multiple `#include` statemnets in a single `.xcconfig` file.
+    - e.g. `<custom-preference name="ios-XCBuildConfiguration-#INCLUDE" value="/path/to/external/dependency/additional_config.xcconfig" />`. 
 - A backup copy of any modified `.xcconfig` file will be made in 'plugins/cordova-custom-config/backup/ios'. By default, these backups will be restored prior to the next `prepare` operation.
 - Auto-restore of the backups can be disabled by setting `<custom-preference name="cordova-custom-config-autorestore" value="false" />` in the `config.xml`.
 - Preference names and values will not be quote-escaped in `.xcconfig` files, so the `quote` attribute has no effect on them.

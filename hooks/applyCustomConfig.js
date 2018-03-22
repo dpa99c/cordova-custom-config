@@ -887,7 +887,7 @@ var applyCustomConfig = (function(){
                 // If item's target build type matches the xcconfig build type
                 if(itemBuildType === fileBuildType)
                 {
-                    // If config.xml contains any #include statements for use the in xcconfig files.
+                    // If config.xml contains any #include statements for use in .xcconfig files
                     if(item.name.match("#INCLUDE") && !fileContents.match(value)) {
                         fileContents += '\n#include "' + value + '"';
                         modified = true;
