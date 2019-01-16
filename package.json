@@ -31,7 +31,7 @@
     "dependencies": {
         "lodash": "^4.17.11",
         "elementtree": "^0.1.6",
-        "plist": "xiangpingmeng/plist.js",
+        "plist": "^3.0.1",
         "xcode": "^1.0.0",
         "colors": "^1.1.2",
         "shelljs": "^0.7.0",
