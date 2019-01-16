@@ -1,5 +1,10 @@
 # CHANGELOG
 
+**v5.0.3**
+* Switch to using latest `plist` release. Resolves #151.
+* Update version of `lodash` dependency.
+* Add support for #include statements in `xcconfig` files on iOS.
+
 **v5.0.2**
 * Improve handling of errors caused by missing dependencies or during script running.
 
