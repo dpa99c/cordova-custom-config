@@ -29,6 +29,7 @@
         "manifest"
     ],
     "dependencies": {
+        "q": "^1.4.1",
         "lodash": "^4.17.11",
         "elementtree": "^0.1.6",
         "plist": "^3.0.1",

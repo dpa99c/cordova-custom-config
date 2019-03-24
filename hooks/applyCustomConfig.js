@@ -1153,8 +1153,8 @@ var applyCustomConfig = (function(){
 // Main
 module.exports = function(ctx) {
     try{
-        deferral = ctx.requireCordovaModule('q').defer();
-        path = ctx.requireCordovaModule('path');
+        deferral = require('q').defer();
+        path = require('path');
         cwd = path.resolve();
 
         hooksPath = path.resolve(ctx.opts.projectRoot, "plugins", ctx.opts.plugin.id, "hooks");
@@ -1162,17 +1162,24 @@ module.exports = function(ctx) {
 
         applyCustomConfig.loadDependencies(ctx);
     }catch(e){
-        var msg = TAG + ": Error loading dependencies for "+SCRIPT_NAME+" - ensure the plugin has been installed via cordova-fetch or run 'npm install cordova-custom-config': "+e.message;
-        deferral.reject(msg);
-        return deferral.promise;
+        e.message = TAG + ": Error loading dependencies for "+SCRIPT_NAME+" - ensure the plugin has been installed via cordova-fetch or run 'npm install cordova-custom-config': "+e.message;
+        if(typeof deferral !== "undefined"){
+            deferral.reject(e.message);
+            return deferral.promise;
+        }
+        throw e;
     }
 
     try{
         logger.verbose("Running " + SCRIPT_NAME);
         applyCustomConfig.init(ctx);
     }catch(e){
-        var msg = TAG + ": Error running "+SCRIPT_NAME+": "+e.message;
-        deferral.reject(msg);
+        e.message = TAG + ": Error running "+SCRIPT_NAME+": "+e.message;
+        if(typeof deferral !== "undefined"){
+            deferral.reject(e.message);
+            return deferral.promise;
+        }
+        throw e;
     }
 
     return deferral.promise;
