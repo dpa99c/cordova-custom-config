@@ -1,5 +1,11 @@
 # CHANGELOG
 
+**5.1.0-dev-1.0**
+* Fix iOS xcodeProject
+* every plugin can change project.pbxproj file,
+* async operations can be exist with random queue, (promise/callback and etc.)
+* every part with  xcode.project should be existed only in one task (micro)
+
 **v5.1.0**
 * Replace requireCordovaModule() with require() due to breaking changes in cordova@9.0.0. Resolves [#152](https://github.com/dpa99c/cordova-custom-config/issues/152).
 
