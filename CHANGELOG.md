@@ -1,5 +1,9 @@
 # CHANGELOG
 
+**v5.1.1**
+* Pin `colors` to `1.4.0`.
+    * Resolves [#173](https://github.com/dpa99c/cordova-custom-config/issues/173). 
+
 **v5.1.0**
 * Replace requireCordovaModule() with require() due to breaking changes in cordova@9.0.0. Resolves [#152](https://github.com/dpa99c/cordova-custom-config/issues/152).
 
