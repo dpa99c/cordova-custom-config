@@ -33,9 +33,9 @@
         "lodash": "^4.17.11",
         "elementtree": "^0.1.6",
         "plist": "^3.0.1",
-        "xcode": "^1.0.0",
+        "xcode": "^3.0.1",
         "colors": "1.4.0",
-        "shelljs": "^0.7.0",
+        "shelljs": "^0.8.5",
         "tostr": "^0.1.0"
     },
     "devDependencies": {
