@@ -141,7 +141,7 @@ var applyCustomConfig = (function(){
 
 
     // Variables
-    var applyCustomConfig = {}, rootdir, plugindir, context, configXml, projectName, settings = {}, updatedFiles = {};
+    var applyCustomConfig = {}, rootdir, plugindir, context, configXml, projectName, iosAppDirName, settings = {}, updatedFiles = {};
 
     var preferencesData;
     var resources;
@@ -1029,31 +1029,31 @@ var applyCustomConfig = (function(){
             var targetFilePath;
             if (platform === 'ios') {
                 if (targetName.indexOf("Info.plist") > -1) {
-                    targetName =  projectName + '-Info.plist';
-                    targetFilePath = path.join(platformPath, projectName, targetName);
+                    targetName =  iosAppDirName + '-Info.plist';
+                    targetFilePath = path.join(platformPath, iosAppDirName, targetName);
                     ensureBackup(targetFilePath, platform, targetName);
                     updateIosPlist(targetFilePath, configItems);
                 }else if (targetName === "project.pbxproj") {
-                    targetFilePath = path.join(platformPath, projectName + '.xcodeproj', targetName);
+                    targetFilePath = path.join(platformPath, iosAppDirName + '.xcodeproj', targetName);
                     ensureBackup(targetFilePath, platform, targetName);
                     updateIosPbxProj(targetFilePath, configItems);
                     updateXCConfigs(configItems, platformPath);
                 }else if (targetName.indexOf("Entitlements-Release.plist") > -1) {
-                    targetFilePath = path.join(platformPath, projectName, targetName);
+                    targetFilePath = path.join(platformPath, iosAppDirName, targetName);
                     ensureBackup(targetFilePath, platform, targetName);
                     updateIosPlist(targetFilePath, configItems);
                 }else if (targetName.indexOf("Entitlements-Debug.plist") > -1) {
-                    targetFilePath = path.join(platformPath, projectName, targetName);
+                    targetFilePath = path.join(platformPath, iosAppDirName, targetName);
                     ensureBackup(targetFilePath, platform, targetName);
                     updateIosPlist(targetFilePath, configItems);
                 }else if (targetName.indexOf("Prefix.pch") > -1) {
-                    targetName =  projectName + '-Prefix.pch';
-                    targetFilePath = path.join(platformPath, projectName, targetName);
+                    targetName =  iosAppDirName + '-Prefix.pch';
+                    targetFilePath = path.join(platformPath, iosAppDirName, targetName);
                     ensureBackup(targetFilePath, platform, targetName);
                     updateIosPch(targetFilePath, configItems);
                 }else if (targetName.indexOf("asset_catalog") > -1) {
                     targetName =  targetName.split('.')[1];
-                    var targetDirPath = path.join(platformPath, projectName, "Images.xcassets", targetName+".imageset");
+                    var targetDirPath = path.join(platformPath, iosAppDirName, "Images.xcassets", targetName+".imageset");
                     deployAssetCatalog(targetName, targetDirPath, configItems);
                 }
 
@@ -1120,6 +1120,15 @@ var applyCustomConfig = (function(){
 
         configXml = fileUtils.getConfigXml();
         projectName = fileUtils.getProjectName();
+
+        // Detect cordova-ios 8+ layout (App/) vs legacy layout (ProjectName/)
+        var newLayoutPath = path.join(rootdir, 'platforms', 'ios', 'App');
+        if(fileUtils.directoryExists(newLayoutPath)){
+            iosAppDirName = 'App';
+        }else{
+            iosAppDirName = projectName;
+        }
+
         settings = fileUtils.getSettings();
         var runHook = settings.hook ? settings.hook : defaultHook;
 

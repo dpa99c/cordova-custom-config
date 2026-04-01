@@ -91,6 +91,16 @@ Therefore a new major version of this plugin (v5) has been released to support t
         - This can be overridden by explicitly setting the `parse_unprefixed` preference
             - `<preference name="cordova-custom-config-parse_unprefixed" value="true" />`
 
+## cordova-ios 8+ compatibility
+
+`cordova-ios@8` changed the iOS project directory structure. Previously, platform files (such as `Info.plist`, entitlements, etc.) were located under a directory named after the project (e.g. `platforms/ios/MyApp/MyApp-Info.plist`). In cordova-ios 8+, these files are located under `platforms/ios/App/App-Info.plist`.
+
+This plugin now automatically detects which layout is present:
+- If `platforms/ios/App/` exists, the new layout is used.
+- Otherwise, the legacy layout using the project name from `config.xml` is used.
+
+No changes to your `config.xml` are required — the `target="*-Info.plist"` wildcard pattern continues to work with both layouts.
+
 ## Remote build environments
 
 This plugin is intended for the automated application of custom configuration to native platform projects in a **local build environment**.
