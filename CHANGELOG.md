@@ -1,4 +1,9 @@
 # CHANGELOG
+**v5.1.2**
+* Updating package.json to fix vulnerabilites
+    * Merged from [#174](https://github.com/dpa99c/cordova-custom-config/pull/174)
+* Support cordova-ios 8+ project layout
+    * Merged from [#183](https://github.com/dpa99c/cordova-custom-config/pull/183)
 
 **v5.1.1**
 * Pin `colors` to `1.4.0`.

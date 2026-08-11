@@ -23,18 +23,18 @@ var restoreBackups = (function(){
     /**********************
      * Internal properties
      *********************/
-    var restoreBackups = {}, context, projectName, logFn, settings;
+    var restoreBackups = {}, context, projectName, iosAppDirName, logFn, settings;
 
     var PLATFORM_CONFIG_FILES = {
         "ios":{
-            "{projectName}-Info.plist": "{projectName}/{projectName}-Info.plist",
-            "project.pbxproj": "{projectName}.xcodeproj/project.pbxproj",
+            "{iosAppDirName}-Info.plist": "{iosAppDirName}/{iosAppDirName}-Info.plist",
+            "project.pbxproj": "{iosAppDirName}.xcodeproj/project.pbxproj",
             "build.xcconfig": "cordova/build.xcconfig",
             "build-extras.xcconfig": "cordova/build-extras.xcconfig",
             "build-debug.xcconfig": "cordova/build-debug.xcconfig",
             "build-release.xcconfig": "cordova/build-release.xcconfig",
-            "Entitlements-Release.plist": "{projectName}/Entitlements-Release.plist",
-            "Entitlements-Debug.plist": "{projectName}/Entitlements-Debug.plist"
+            "Entitlements-Release.plist": "{iosAppDirName}/Entitlements-Release.plist",
+            "Entitlements-Debug.plist": "{iosAppDirName}/Entitlements-Debug.plist"
         },
         "android":{
             "AndroidManifest.xml": "AndroidManifest.xml"
@@ -63,7 +63,7 @@ var restoreBackups = (function(){
     }
 
     function parseProjectName(fileName){
-        return fileName.replace(/{(projectName)}/g, projectName);
+        return fileName.replace(/{projectName}/g, projectName).replace(/{iosAppDirName}/g, iosAppDirName);
     }
 
     // Script operations are complete, so resolve deferred promises
@@ -85,6 +85,15 @@ var restoreBackups = (function(){
         context = ctx;
 
         projectName = fileUtils.getProjectName();
+
+        // Detect cordova-ios 8+ layout (App/) vs legacy layout (ProjectName/)
+        var newLayoutPath = path.join(cwd, 'platforms', 'ios', 'App');
+        if(fileUtils.directoryExists(newLayoutPath)){
+            iosAppDirName = 'App';
+        }else{
+            iosAppDirName = projectName;
+        }
+
         logFn = context.hook === "before_plugin_uninstall" ? logger.log : logger.verbose;
 
         settings = fileUtils.getSettings();
