@@ -1114,19 +1114,35 @@ var applyCustomConfig = (function(){
     };
 
     applyCustomConfig.init = function(ctx){
-        context = ctx;
-        rootdir = context.opts.projectRoot;
-        plugindir = path.join(cwd, 'plugins', context.opts.plugin.id);
+        try{
+            context = ctx;
+            rootdir = context.opts.projectRoot;
+            plugindir = path.join(cwd, 'plugins', context.opts.plugin.id);
 
-        configXml = fileUtils.getConfigXml();
-        projectName = fileUtils.getProjectName();
+            configXml = fileUtils.getConfigXml();
+            try{
+                projectName = fileUtils.getProjectName();
+            }catch(e){
+                // could not find platform project  - exit gracefully
+                logger.verbose("Could not find iOS platform project - skipping config");
+                process.exit(0);
+            }
 
-        // Detect cordova-ios 8+ layout (App/) vs legacy layout (ProjectName/)
-        var newLayoutPath = path.join(rootdir, 'platforms', 'ios', 'App');
-        if(fileUtils.directoryExists(newLayoutPath)){
-            iosAppDirName = 'App';
-        }else{
-            iosAppDirName = projectName;
+            // Detect cordova-ios 8+ layout (App/) vs legacy layout (ProjectName/)
+            var newLayoutPath = path.join(rootdir, 'platforms', 'ios', 'App');
+            if(fileUtils.directoryExists(newLayoutPath)){
+                iosAppDirName = 'App';
+            }else{
+                iosAppDirName = projectName;
+            }
+        }catch(e){
+            e.message = TAG + ": Error initializing "+SCRIPT_NAME+": "+e.message;
+            console.error(e.message);
+            if(typeof deferral !== "undefined"){
+                deferral.resolve();
+                return deferral.promise;
+            }
+            process.exit(0);
         }
 
         settings = fileUtils.getSettings();
@@ -1172,11 +1188,12 @@ module.exports = function(ctx) {
         applyCustomConfig.loadDependencies(ctx);
     }catch(e){
         e.message = TAG + ": Error loading dependencies for "+SCRIPT_NAME+" - ensure the plugin has been installed via cordova-fetch or run 'npm install cordova-custom-config': "+e.message;
+        console.error(e.message);
         if(typeof deferral !== "undefined"){
-            deferral.reject(e.message);
+            deferral.resolve();
             return deferral.promise;
         }
-        throw e;
+        process.exit(0);
     }
 
     try{
@@ -1184,11 +1201,12 @@ module.exports = function(ctx) {
         applyCustomConfig.init(ctx);
     }catch(e){
         e.message = TAG + ": Error running "+SCRIPT_NAME+": "+e.message;
+        console.error(e.message);
         if(typeof deferral !== "undefined"){
-            deferral.reject(e.message);
+            deferral.resolve();
             return deferral.promise;
         }
-        throw e;
+        process.exit(0);
     }
 
     return deferral.promise;

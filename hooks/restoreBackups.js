@@ -84,7 +84,13 @@ var restoreBackups = (function(){
     restoreBackups.init = function(ctx){
         context = ctx;
 
-        projectName = fileUtils.getProjectName();
+        try{
+            projectName = fileUtils.getProjectName();
+        }catch(e){
+            // could not find platform project  - exit gracefully
+            logger.verbose("Could not find iOS platform project - skipping restore");
+            process.exit(0);
+        }
 
         // Detect cordova-ios 8+ layout (App/) vs legacy layout (ProjectName/)
         var newLayoutPath = path.join(cwd, 'platforms', 'ios', 'App');
@@ -141,10 +147,10 @@ module.exports = function(ctx) {
     }catch(e){
         e.message = TAG + ": Error loading dependencies for "+SCRIPT_NAME+" - ensure the plugin has been installed via cordova-fetch or run 'npm install cordova-custom-config': "+e.message;
         if(typeof deferral !== "undefined"){
-            deferral.reject(e.message);
+            deferral.resolve();
             return deferral.promise;
         }
-        throw e;
+        process.exit(0);
     }
 
     try{
@@ -152,7 +158,8 @@ module.exports = function(ctx) {
         restoreBackups.init(ctx);
     }catch(e){
         var msg = TAG + ": Error running "+SCRIPT_NAME+": "+e.message;
-        deferral.reject(msg);
+        console.error(msg);
+        deferral.resolve();
     }
 
     return deferral.promise;
