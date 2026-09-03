@@ -1,4 +1,18 @@
 # CHANGELOG
+**v5.2.0**
+
+* Fail gracefully on errors so as not to cause Cordova build process to fail.
+    * Handle missing `cordova-ios` platform project gracefully.
+* Fix resolution of `cordova-ios` module.
+* Fix resolution of assets for `cordova-ios@8+` project structure.
+* Update dependencies to latest versions to resolve security vulnerabilities.
+* (ios) use `parseSync` instead of async `parse` for parsing Xcode project.
+    * Merged from [#169](https://github.com/dpa99c/cordova-custom-config/pull/169)
+* `Add idempotent xcconfig list appends`
+    * Resolves [#8](https://github.com/dpa99c/cordova-custom-config/issues/8)
+* (android) Add support for modifying arbitrary files beyond the manifest.
+    * Resolves [#55](https://github.com/dpa99c/cordova-custom-config/issues/55)
+
 **v5.1.2**
 * Updating package.json to fix vulnerabilites
     * Merged from [#174](https://github.com/dpa99c/cordova-custom-config/pull/174)
