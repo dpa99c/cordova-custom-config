@@ -134,9 +134,22 @@ var restoreBackups = (function(){
     return restoreBackups;
 })();
 
+function createDeferral() {
+    var resolvePromise, rejectPromise;
+    var promise = new Promise(function (resolve, reject) {
+        resolvePromise = resolve;
+        rejectPromise = reject;
+    });
+    return {
+        promise: promise,
+        resolve: resolvePromise,
+        reject: rejectPromise
+    };
+}
+
 module.exports = function(ctx) {
     try{
-        deferral = require('q').defer();
+        deferral = createDeferral();
         path = require('path');
         cwd = path.resolve();
 

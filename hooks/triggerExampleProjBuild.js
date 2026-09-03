@@ -3,7 +3,6 @@
 
 var shell = require('shelljs');
 var path = require('path');
-var got = require('got');
 
 var targetRepo = 'dpa99c/cordova-custom-config-example';
 
@@ -25,7 +24,8 @@ console.log("Git commit: "+gitCommitHash);
 
 console.log('Calling Travis...');
 
-got.post("https://api.travis-ci.org/repo/"+encodeURIComponent(targetRepo)+"/requests", {
+fetch("https://api.travis-ci.org/repo/"+encodeURIComponent(targetRepo)+"/requests", {
+  method: "POST",
   headers: {
     "Content-Type": "application/json",
     "Accept": "application/json",
@@ -38,6 +38,11 @@ got.post("https://api.travis-ci.org/repo/"+encodeURIComponent(targetRepo)+"/requ
       branch: 'master'
     }
   })
+})
+.then(function(response){
+    if (!response.ok) {
+      throw new Error("Travis request failed with status " + response.status);
+    }
 })
 .then(function(){
   console.log("Triggered build of "+targetRepo);

@@ -5,10 +5,10 @@ var logger = (function(){
     /**********************
      * Internal properties
      *********************/
-    var logger, context, hasColors = true;
+    var logger, context, colors, hasColors = true;
 
     try{
-        require('colors');
+        colors = require('picocolors');
     }catch(e){
         hasColors = false;
     }
@@ -39,7 +39,7 @@ var logger = (function(){
             if(context.opts.verbose || context.cmdLine.match("--verbose") || context.cmdLine.match("--debug")){
                 msg = prefixMsg(msg);
                 if(hasColors){
-                    console.log(msg.green);
+                    console.log(colors.green(msg));
                 }else{
                     console.log(msg);
                 }
@@ -48,7 +48,7 @@ var logger = (function(){
         log: function(msg){
             msg = prefixMsg(msg);
             if(hasColors){
-                console.log(msg.white);
+                console.log(colors.white(msg));
             }else{
                 console.log(msg);
             }
@@ -56,7 +56,7 @@ var logger = (function(){
         info: function(msg){
             msg = prefixMsg(msg);
             if(hasColors){
-                console.log(msg.blue);
+                console.log(colors.blue(msg));
             }else{
                 console.info(msg);
             }
@@ -64,7 +64,7 @@ var logger = (function(){
         warn: function(msg){
             msg = prefixMsg(msg);
             if(hasColors){
-                console.log(msg.yellow);
+                console.log(colors.yellow(msg));
             }else{
                 console.warn(msg);
             }
@@ -72,7 +72,7 @@ var logger = (function(){
         error: function(msg){
             msg = prefixMsg(msg);
             if(hasColors){
-                console.log(msg.red);
+                console.log(colors.red(msg));
             }else{
                 console.error(msg);
             }

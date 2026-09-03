@@ -16,8 +16,8 @@ var logger,
     et,
     plist,
     xcode,
-    tostr,
     os,
+    util,
     fileUtils;
 
 // Other globals
@@ -738,7 +738,7 @@ var applyCustomConfig = (function(){
             } else {
                 infoPlist[key] = value;
             }
-            logger.verbose("Wrote to plist; key=" + key + "; value=" + tostr(infoPlist[key]));
+            logger.verbose("Wrote to plist; key=" + key + "; value=" + util.inspect(infoPlist[key], { depth: null }));
         });
 
         tempInfoPlist = plist.build(infoPlist);
@@ -1116,12 +1116,14 @@ var applyCustomConfig = (function(){
         fs = require('fs'),
             _ = require('lodash'),
             et = require('elementtree'),
-            plist = require('plist'),
             xcode = require('xcode'),
-            tostr = require('tostr'),
             os = require('os'),
+            util = require('util'),
             fileUtils = require(path.resolve(hooksPath, "fileUtils.js"))(ctx);
-        logger.verbose("Loaded module dependencies");
+        return import('plist').then(function(plistModule){
+            plist = plistModule;
+            logger.verbose("Loaded module dependencies");
+        });
     };
 
     applyCustomConfig.init = function(ctx){
@@ -1186,17 +1188,32 @@ var applyCustomConfig = (function(){
     return applyCustomConfig;
 })();
 
+function createDeferral() {
+    var resolvePromise, rejectPromise;
+    var promise = new Promise(function (resolve, reject) {
+        resolvePromise = resolve;
+        rejectPromise = reject;
+    });
+    return {
+        promise: promise,
+        resolve: resolvePromise,
+        reject: rejectPromise
+    };
+}
+
 // Main
 module.exports = function(ctx) {
+    var dependencyPromise;
+
     try{
-        deferral = require('q').defer();
+        deferral = createDeferral();
         path = require('path');
         cwd = path.resolve();
 
         hooksPath = path.resolve(ctx.opts.projectRoot, "plugins", ctx.opts.plugin.id, "hooks");
         logger = require(path.resolve(hooksPath, "logger.js"))(ctx);
 
-        applyCustomConfig.loadDependencies(ctx);
+        dependencyPromise = applyCustomConfig.loadDependencies(ctx);
     }catch(e){
         e.message = TAG + ": Error loading dependencies for "+SCRIPT_NAME+" - ensure the plugin has been installed via cordova-fetch or run 'npm install cordova-custom-config': "+e.message;
         console.error(e.message);
@@ -1207,18 +1224,20 @@ module.exports = function(ctx) {
         process.exit(0);
     }
 
-    try{
-        logger.verbose("Running " + SCRIPT_NAME);
-        applyCustomConfig.init(ctx);
-    }catch(e){
-        e.message = TAG + ": Error running "+SCRIPT_NAME+": "+e.message;
-        console.error(e.message);
-        if(typeof deferral !== "undefined"){
+    dependencyPromise.then(function(){
+        try{
+            logger.verbose("Running " + SCRIPT_NAME);
+            applyCustomConfig.init(ctx);
+        }catch(e){
+            e.message = TAG + ": Error running "+SCRIPT_NAME+": "+e.message;
+            console.error(e.message);
             deferral.resolve();
-            return deferral.promise;
         }
-        process.exit(0);
-    }
+    }, function(e){
+        e.message = TAG + ": Error loading dependencies for "+SCRIPT_NAME+" - ensure the plugin has been installed via cordova-fetch or run 'npm install cordova-custom-config': "+e.message;
+        console.error(e.message);
+        deferral.resolve();
+    });
 
     return deferral.promise;
 };

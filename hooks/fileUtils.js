@@ -6,8 +6,7 @@
 var fs,
     path,
     _,
-    et,
-    tostr;
+    et;
 
 /**
  * Provides files utilities
@@ -108,7 +107,6 @@ var fileUtils = (function(){
         path = require('path');
         _ = require('lodash');
         et = require('elementtree');
-        tostr = require('tostr');
     };
     return fileUtils;
 })();
