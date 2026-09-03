@@ -173,7 +173,7 @@ Preferences are set by defining a `<custom-preference>` element in the config.xm
 `<custom-config-file>` blocks allow platform-specific chunks of config to be defined as an XML subtree in the `config.xml`, which is then applied to the appropriate platform configuration file by the plugin.
 
 1.  config-file elements MUST be defined inside a platform element, otherwise they will be ignored.
-2.  config-file target attributes specify the target file to update. (AndroidManifest.xml or *-Info.plist)
+2.  config-file target attributes specify the target file to update. Android targets are paths relative to `platforms/android` (with `AndroidManifest.xml` as the special target that supports both Cordova Android project layouts); iOS targets are `*-Info.plist`.
 3.  config-file parent attributes specify the parent element (AndroidManifest.xml) or parent key (*-Info.plist) that the child data will replace or be appended to.
 4.  config-file elements are uniquely indexed by target AND parent for each platform.
 5.  If there are multiple config-file's defined with the same target AND parent, the last config-file will be used
@@ -182,7 +182,7 @@ Preferences are set by defining a `<custom-preference>` element in the config.xm
 
 ## Android
 
-The plugin currently supports setting of custom config only in `platforms/android/AndroidManifest.xml`.
+The plugin supports setting custom config in XML files within the Android platform directory. The `target` path is relative to `platforms/android`. The `AndroidManifest.xml` target is resolved automatically for both the legacy Cordova Android layout and the `cordova-android@7+` layout.
 For a list of possible manifest values see [http://developer.android.com/guide/topics/manifest/manifest-intro.html](http://developer.android.com/guide/topics/manifest/manifest-intro.html)
 
 ### Android preferences
@@ -238,9 +238,10 @@ If the attribute you are setting is on the root `<manifest>` element, just omit 
 
 ### Android config blocks
 
-- `<custom-config-file>` blocks are use to define chunks of config an XML subtree, to be inserted into `AndroidManifest.xml`
-- the `target` attribute must be set to `AndroidManifest.xml`: `<custom-config-file target="AndroidManifest.xml">`
-- the `parent` attribute defines an Xpath to the parent element in the `AndroidManifest.xml` under which the XML subtree block should be inserted
+- `<custom-config-file>` blocks are used to define chunks of config as an XML subtree, to be inserted into an Android XML file.
+- the `target` attribute must be set to the path of an XML file relative to `platforms/android`: `<custom-config-file target="app/src/main/res/values/cdv_strings.xml">`
+- use `AndroidManifest.xml` for the manifest; this target is resolved automatically for both supported Cordova Android layouts.
+- the `parent` attribute defines an XPath to the parent element in the target XML file under which the XML subtree block should be inserted
     - to insert a block under the root `<manifest>` element, use `parent="/*"`
     - to insert a block under a descendant of `<manifest>`, use an Xpath prefixed with `./`
         e.g `parent="./application/activity"` will insert the block under `/manifest/application/activity`
@@ -277,6 +278,14 @@ So for the example above:
     </custom-config-file>
 
 will preserve the existing `<application>` element(s).
+
+Other Android XML files can be targeted in the same way. For example, this adds a string to Cordova's generated resource file:
+
+    <custom-config-file target="app/src/main/res/values/cdv_strings.xml" parent="/*">
+        <string name="custom_config_string">Custom string</string>
+    </custom-config-file>
+
+Android resource elements with a `name` attribute are matched by that attribute, so this form is repeatable across prepares.
 
 
 ### Android example

@@ -35,9 +35,6 @@ var restoreBackups = (function(){
             "build-release.xcconfig": "cordova/build-release.xcconfig",
             "Entitlements-Release.plist": "{iosAppDirName}/Entitlements-Release.plist",
             "Entitlements-Debug.plist": "{iosAppDirName}/Entitlements-Debug.plist"
-        },
-        "android":{
-            "AndroidManifest.xml": "AndroidManifest.xml"
         }
     };
 
@@ -45,8 +42,39 @@ var restoreBackups = (function(){
      * Internal functions
      *********************/
 
+    function getAndroidConfigFiles(){
+        var backupPlatformPath = path.join(cwd, 'plugins', context.opts.plugin.id, "backup", "android"),
+            configFiles = {};
+
+        function addBackupFiles(directoryPath, relativePath){
+            if(!fileUtils.directoryExists(directoryPath)){
+                return;
+            }
+
+            _.each(fs.readdirSync(directoryPath), function(fileName){
+                var backupFilePath = path.join(directoryPath, fileName),
+                    targetFileName = path.join(relativePath, fileName);
+
+                if(fileUtils.directoryExists(backupFilePath)){
+                    addBackupFiles(backupFilePath, targetFileName);
+                }else if(fileUtils.fileExists(backupFilePath)){
+                    configFiles[targetFileName] = targetFileName;
+                }
+            });
+        }
+
+        addBackupFiles(backupPlatformPath, '');
+
+        if(configFiles["AndroidManifest.xml"]){
+            var newManifestPath = path.join(cwd, 'platforms', 'android', 'app', 'src', 'main', 'AndroidManifest.xml');
+            configFiles["AndroidManifest.xml"] = fileUtils.fileExists(newManifestPath) ? "app/src/main/AndroidManifest.xml" : "AndroidManifest.xml";
+        }
+
+        return configFiles;
+    }
+
     function restorePlatformBackups(platform){
-        var configFiles = PLATFORM_CONFIG_FILES[platform],
+        var configFiles = platform === "android" ? getAndroidConfigFiles() : (PLATFORM_CONFIG_FILES[platform] || {}),
             backupFile, backupFileName, backupFilePath, backupFileExists, targetFilePath;
 
         logger.verbose("Checking to see if there are backups to restore...");

@@ -132,6 +132,17 @@ var applyCustomConfig = (function(){
         }
     ];
 
+    var androidResourceMultiples = [
+        { tag: "string", parent: "./", uniqueBy: "name" },
+        { tag: "string-array", parent: "./", uniqueBy: "name" },
+        { tag: "integer-array", parent: "./", uniqueBy: "name" },
+        { tag: "plurals", parent: "./", uniqueBy: "name" },
+        { tag: "color", parent: "./", uniqueBy: "name" },
+        { tag: "dimen", parent: "./", uniqueBy: "name" },
+        { tag: "style", parent: "./", uniqueBy: "name" },
+        { tag: "declare-styleable", parent: "./", uniqueBy: "name" }
+    ];
+
     var xcconfigs = ["build.xcconfig", "build-extras.xcconfig", "build-debug.xcconfig", "build-release.xcconfig"];
 
     var manifestPath = {
@@ -525,17 +536,17 @@ var applyCustomConfig = (function(){
     }
 
     /**
-     * Updates the AndroidManifest.xml target file with data from config.xml
+     * Updates an Android XML target file with data from config.xml
      * @param targetFilePath
      * @param configItems
      */
-    function updateAndroidManifest(targetFilePath, configItems) {
+    function updateAndroidXml(targetFilePath, configItems) {
         var tempManifest = fileUtils.parseElementtreeSync(targetFilePath),
             root = tempManifest.getroot();
 
         var isAllowedMultiple = function(tag, parent){
             var multipleConfig = null;
-            _.each(androidMultiples, function(multiple){
+            _.each(androidMultiples.concat(androidResourceMultiples), function(multiple){
                 if(multiple.tag === tag && multiple.parent === parent){
                     multipleConfig = multiple;
                 }
@@ -611,8 +622,11 @@ var applyCustomConfig = (function(){
                 };
 
                 if(multiple){
-                    var uniqueSelector = childSelector + "[@android:"+multiple.uniqueBy+"='" + data.attrib["android:"+multiple.uniqueBy] + "']";
-                    childEl = parentEl.find(uniqueSelector);
+                    var uniqueAttribute = data.attrib["android:"+multiple.uniqueBy] !== undefined ? "android:"+multiple.uniqueBy : multiple.uniqueBy;
+                    if(data.attrib[uniqueAttribute] !== undefined){
+                        var uniqueSelector = childSelector + "[@"+uniqueAttribute+"='" + data.attrib[uniqueAttribute] + "']";
+                        childEl = parentEl.find(uniqueSelector);
+                    }
 
                     // if child el is not found by unique selector, compare child contents
                     if(!childEl){
@@ -1069,6 +1083,16 @@ var applyCustomConfig = (function(){
         return self.indexOf(value) === index;
     }
 
+    function ensureDirectory(dirPath){
+        var parentPath = path.dirname(dirPath);
+        if(!fileUtils.directoryExists(dirPath)){
+            if(parentPath !== dirPath && !fileUtils.directoryExists(parentPath)){
+                ensureDirectory(parentPath);
+            }
+            fileUtils.createDirectory(dirPath);
+        }
+    }
+
 
     function ensureBackup(targetFilePath, platform, targetFileName){
         var backupDirPath = path.join(plugindir, "backup"),
@@ -1090,6 +1114,7 @@ var applyCustomConfig = (function(){
 
         var backupFileExists = fileUtils.fileExists(backupFilePath);
         if(!backupFileExists){
+            ensureDirectory(path.dirname(backupFilePath));
             fileUtils.copySync(targetFilePath, backupFilePath);
             logger.verbose("Backed up "+targetFilePath+" to "+backupFilePath);
         }else{
@@ -1146,10 +1171,10 @@ var applyCustomConfig = (function(){
                     deployAssetCatalog(targetName, targetDirPath, configItems);
                 }
 
-            } else if (platform === 'android' && targetName === 'AndroidManifest.xml') {
-                targetFilePath = androidManifestFilePath;
+            } else if (platform === 'android') {
+                targetFilePath = targetName === 'AndroidManifest.xml' ? androidManifestFilePath : getAndroidTargetFilePath(platformPath, targetName);
                 ensureBackup(targetFilePath, platform, targetName);
-                updateAndroidManifest(targetFilePath, configItems);
+                updateAndroidXml(targetFilePath, configItems);
             } else if (platform === 'wp8') {
                 targetFilePath = path.join(platformPath, targetName);
                 ensureBackup(targetFilePath, platform, targetName);
@@ -1170,6 +1195,17 @@ var applyCustomConfig = (function(){
         }else{
             throw "Can't find AndroidManifest.xml in platforms/Android";
         }
+    }
+
+    function getAndroidTargetFilePath(platformPath, targetName){
+        var resolvedPlatformPath = path.resolve(platformPath),
+            targetFilePath = path.resolve(resolvedPlatformPath, targetName);
+
+        if(targetFilePath !== resolvedPlatformPath && targetFilePath.indexOf(resolvedPlatformPath + path.sep) !== 0){
+            throw "Android config target must be within platforms/android: " + targetName;
+        }
+
+        return targetFilePath;
     }
 
     /**
