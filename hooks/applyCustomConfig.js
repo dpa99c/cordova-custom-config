@@ -361,6 +361,7 @@ var applyCustomConfig = (function(){
                 }
 
                 prefData["xcconfigEnforce"] = preference.attrib.xcconfigEnforce ? preference.attrib.xcconfigEnforce : null;
+                prefData["xcconfigAppend"] = preference.attrib.xcconfigAppend ? preference.attrib.xcconfigAppend : null;
 
                 if(!configData[target]) {
                     configData[target] = [];
@@ -843,6 +844,13 @@ var applyCustomConfig = (function(){
                 }
                 var value = (item.quote && (item.quote === "none" || item.quote === "key")) ? item.value : quoteEscape(item.value);
 
+                if(item.xcconfigAppend === "true" && listValuePresent(block["buildSettings"][name], value)) {
+                    continue;
+                }
+                if(item.xcconfigAppend === "true") {
+                    value = appendListValue(block["buildSettings"][name], value);
+                }
+
                 block["buildSettings"][name] = value;
                 modified = true;
                 logger.verbose(mode+" XCBuildConfiguration key={ "+name+" } to value={ "+value+" } for build type='"+block['name']+"' in block='"+blockName+"'");
@@ -890,6 +898,15 @@ var applyCustomConfig = (function(){
                     modified = true;
                 };
 
+                var doAppend = function(){
+                    var updatedFileContents = appendXCConfigValue(fileContents, name, value);
+                    if(updatedFileContents !== fileContents){
+                        fileContents = updatedFileContents;
+                        logger.verbose("Appended "+item.name+" with '"+item.value+"' in "+targetFileName);
+                        modified = true;
+                    }
+                };
+
                 // If item's target build type matches the xcconfig build type
                 if(itemBuildType === fileBuildType)
                 {
@@ -897,6 +914,8 @@ var applyCustomConfig = (function(){
                     if(item.name.match("#INCLUDE") && !fileContents.match(value)) {
                         fileContents += '\n#include "' + value + '"';
                         modified = true;
+                    } else if(item.xcconfigAppend === "true" && item.xcconfigEnforce !== "false") {
+                        doAppend();
                     } else {
                         // If file contains the item, replace it with configured value
                         if (fileContents.match(escapedName) && item.xcconfigEnforce !== "false") {
@@ -911,7 +930,11 @@ var applyCustomConfig = (function(){
                 // if item is a Debug CODE_SIGNING_IDENTITY, this is a special case: Cordova places its default Debug CODE_SIGNING_IDENTITY in build.xcconfig (not build-debug.xcconfig)
                 // so if buildType="debug", want to overrwrite in build.xcconfig
                 if(item.name.match("CODE_SIGN_IDENTITY") && itemBuildType === "debug" && fileBuildType === "none" && !item.xcconfigEnforce){
-                    doReplace();
+                    if(item.xcconfigAppend === "true"){
+                        doAppend();
+                    }else{
+                        doReplace();
+                    }
                 }
             }
         });
@@ -922,6 +945,55 @@ var applyCustomConfig = (function(){
             logger.verbose("Overwrote "+targetFileName);
         }
 
+    }
+
+    function appendXCConfigValue(fileContents, name, value){
+        var settingPattern = new RegExp("(^|\\r?\\n)([ \\t]*\"?" + regExpEscape(name) + "\"?[ \\t]*=[ \\t]*)([^\\r\\n]*)");
+        var updatedFileContents = fileContents.replace(settingPattern, function(match, linePrefix, setting, currentValue){
+            if(listValuePresent(currentValue, value)){
+                return match;
+            }
+            return linePrefix + setting + currentValue + (currentValue.trim() ? " " : "") + value;
+        });
+
+        if(updatedFileContents !== fileContents || settingPattern.test(fileContents)){
+            return updatedFileContents;
+        }
+        return fileContents + "\n" + name + " = " + value;
+    }
+
+    function listValuePresent(list, value){
+        if(Array.isArray(list)){
+            list = list.join(" ");
+        }
+        if(list === undefined || list === null){
+            return false;
+        }
+
+        var candidates = [String(value)];
+        if(candidates[0].length > 1 && candidates[0].charAt(0) === '"' && candidates[0].charAt(candidates[0].length - 1) === '"'){
+            candidates.push(candidates[0].substring(1, candidates[0].length - 1));
+        }else{
+            candidates.push(quoteEscape(candidates[0]));
+        }
+
+        for(var i = 0; i < candidates.length; i++){
+            if(new RegExp("(^|\\s)" + regExpEscape(candidates[i]) + "(?=\\s|$)").test(String(list))){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    function appendListValue(list, value){
+        if(Array.isArray(list)){
+            list.push(value.length > 1 && value.charAt(0) === '"' && value.charAt(value.length - 1) === '"' ? value.substring(1, value.length - 1) : value);
+            return list;
+        }
+        if(list === undefined || list === null || !String(list).trim()){
+            return value;
+        }
+        return String(list) + " " + value;
     }
 
     function deployAssetCatalog(targetName, targetDirPath, configItems){

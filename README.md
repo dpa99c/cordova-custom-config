@@ -380,6 +380,11 @@ config.xml:
 - By default, if an entry is found in the `.xcconfig` file which corresponds to the custom preference name in the `config.xml`, the value in the `.xcconfig` file will be overwritten with the value in the `config.xml`.
 - To prevent the plugin from overwriting the value of a specific preference in the corresponding `.xcconfig` file, set the preference attribute `xcconfigEnforce="false"`.
      - e.g `<custom-preference name="ios-XCBuildConfiguration-SOME_PREFERENCE" value="Some value" buildType="debug" xcconfigEnforce="false" />`
+- To append an item to a list-valued build preference in both `project.pbxproj` and `.xcconfig` files without replacing its existing value, set the preference attribute `xcconfigAppend="true"`.
+    - The value is appended as one list item only when it is not already present. If the preference does not exist, it is created.
+    - The value is appended verbatim, so quote it when the list item contains spaces.
+    - e.g `<custom-preference name="ios-XCBuildConfiguration-HEADER_SEARCH_PATHS" value="$(PROJECT_DIR)/custom/include" xcconfigAppend="true" />`
+    - `xcconfigEnforce="false"` prevents an append, just as it prevents a replacement.
 - If a preference value doesn't already exist in the corresponding `.xcconfig` file, you can force its addition by setting the preference attribute `xcconfigEnforce="true"`.
 This will append it to the corresponding .xcconfig` file.
      - e.g `<custom-preference name="ios-XCBuildConfiguration-SOME_PREFERENCE" value="Some value" buildType="debug" xcconfigEnforce="true" />`
