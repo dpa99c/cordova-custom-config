@@ -40,7 +40,7 @@
     },
     "devDependencies": {
         "jshint": "^2.6.0",
-        "got": "^6.5.0"
+        "got": "^11.8.5"
     },
     "scripts": {
         "test": "jshint hooks"
