@@ -63,7 +63,7 @@ var fileUtils = (function(){
     fileUtils.getProjectName = function(){
         const projectRoot = context.opts.projectRoot;
         const platformPath = path.join(projectRoot, 'platforms', 'ios');
-        const cordova_ios = require('cordova-ios');
+        const cordova_ios = require(require.resolve('cordova-ios', { paths: [projectRoot] }));
         const iosProject = new cordova_ios('ios', platformPath);
 
         return path.basename(iosProject.locations.xcodeCordovaProj);

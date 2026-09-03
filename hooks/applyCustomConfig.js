@@ -968,6 +968,17 @@ var applyCustomConfig = (function(){
         });
     }
 
+    function getAssetCatalogPath(platformPath){
+        var appPath = path.join(platformPath, iosAppDirName);
+        var legacyAssetCatalogPath = path.join(appPath, "Images.xcassets");
+        var assetCatalogPath = path.join(appPath, "Assets.xcassets");
+
+        if(fileUtils.directoryExists(legacyAssetCatalogPath)){
+            return legacyAssetCatalogPath;
+        }
+        return assetCatalogPath;
+    }
+
     function regExpEscape(literal_string) {
         return literal_string.replace(/[-[\]{}()*+!<=:?.\/\\^$|#\s,]/g, '\\$&');
     }
@@ -1053,7 +1064,7 @@ var applyCustomConfig = (function(){
                     updateIosPch(targetFilePath, configItems);
                 }else if (targetName.indexOf("asset_catalog") > -1) {
                     targetName =  targetName.split('.')[1];
-                    var targetDirPath = path.join(platformPath, iosAppDirName, "Images.xcassets", targetName+".imageset");
+                    var targetDirPath = path.join(getAssetCatalogPath(platformPath), targetName+".imageset");
                     deployAssetCatalog(targetName, targetDirPath, configItems);
                 }
 
