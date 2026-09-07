@@ -1,4 +1,8 @@
 # CHANGELOG
+**v5.2.1**
+* fix: don't process.exit(0) when the iOS project can't be resolved
+    * Merged from PR [#185](https://github.com/dpa99c/cordova-custom-config/pull/185)
+
 **v5.2.0**
 
 * Fail gracefully on errors so as not to cause Cordova build process to fail.
