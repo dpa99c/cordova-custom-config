@@ -115,9 +115,14 @@ var restoreBackups = (function(){
         try{
             projectName = fileUtils.getProjectName();
         }catch(e){
-            // could not find platform project  - exit gracefully
-            logger.verbose("Could not find iOS platform project - skipping restore");
-            process.exit(0);
+            // Could not resolve the iOS platform project (e.g. an Android-only
+            // project where cordova-ios isn't installed). projectName is only
+            // used to build iOS-specific paths and the platform loop below only
+            // visits platforms that exist, so continue without it instead of
+            // killing the whole cordova process (process.exit(0) here silently
+            // aborted `cordova prepare/run/build android` with exit code 0).
+            logger.verbose("Could not find iOS platform project - continuing without it");
+            projectName = null;
         }
 
         // Detect cordova-ios 8+ layout (App/) vs legacy layout (ProjectName/)
