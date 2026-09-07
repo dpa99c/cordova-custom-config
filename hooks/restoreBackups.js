@@ -74,6 +74,13 @@ var restoreBackups = (function(){
     }
 
     function restorePlatformBackups(platform){
+        if(platform === "ios" && !iosAppDirName){
+            // Without a resolved iOS project directory name, {iosAppDirName}
+            // placeholders would expand to "null" and restore backups to the
+            // wrong paths - skip iOS restore entirely.
+            logger.log("Skipping restore of iOS backups - unable to resolve the iOS project directory name");
+            return;
+        }
         var configFiles = platform === "android" ? getAndroidConfigFiles() : (PLATFORM_CONFIG_FILES[platform] || {}),
             backupFile, backupFileName, backupFilePath, backupFileExists, targetFilePath;
 
@@ -115,9 +122,14 @@ var restoreBackups = (function(){
         try{
             projectName = fileUtils.getProjectName();
         }catch(e){
-            // could not find platform project  - exit gracefully
-            logger.verbose("Could not find iOS platform project - skipping restore");
-            process.exit(0);
+            // Could not resolve the iOS platform project (e.g. an Android-only
+            // project where cordova-ios isn't installed). projectName is only
+            // used to build iOS-specific paths and the platform loop below only
+            // visits platforms that exist, so continue without it instead of
+            // killing the whole cordova process (process.exit(0) here silently
+            // aborted `cordova prepare/run/build android` with exit code 0).
+            logger.verbose("Could not find iOS platform project - continuing without it");
+            projectName = null;
         }
 
         // Detect cordova-ios 8+ layout (App/) vs legacy layout (ProjectName/)
