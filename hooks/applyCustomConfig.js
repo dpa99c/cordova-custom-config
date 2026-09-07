@@ -1132,6 +1132,15 @@ var applyCustomConfig = (function(){
      * @param platform
      */
     function updatePlatformConfig(platform) {
+        if(platform === "ios" && !iosAppDirName){
+            // Without a resolved iOS project directory name, the target paths
+            // below ("<name>-Info.plist", "<name>.xcodeproj/project.pbxproj")
+            // would contain "null", and a failed pbxproj update could leave
+            // asyncOperationsRemaining nonzero so the hook never resolves -
+            // skip iOS processing entirely.
+            logger.warn("Skipping iOS custom config - unable to resolve the iOS project directory name");
+            return;
+        }
         if(platform === "android"){
             getAndroidManifestFilePath();
         }

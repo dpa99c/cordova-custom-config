@@ -74,6 +74,13 @@ var restoreBackups = (function(){
     }
 
     function restorePlatformBackups(platform){
+        if(platform === "ios" && !iosAppDirName){
+            // Without a resolved iOS project directory name, {iosAppDirName}
+            // placeholders would expand to "null" and restore backups to the
+            // wrong paths - skip iOS restore entirely.
+            logger.log("Skipping restore of iOS backups - unable to resolve the iOS project directory name");
+            return;
+        }
         var configFiles = platform === "android" ? getAndroidConfigFiles() : (PLATFORM_CONFIG_FILES[platform] || {}),
             backupFile, backupFileName, backupFilePath, backupFileExists, targetFilePath;
 
